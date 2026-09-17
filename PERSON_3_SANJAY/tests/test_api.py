@@ -19,7 +19,16 @@ def test_api_surface():
     assert "metadata" in forensics_res
     
     cnn_res = predict(img)
+    assert cnn_res["status"] == "success"
+    assert cnn_res["class"] in ("original", "modified")
     assert cnn_res["available"] is True
     assert cnn_res["label"] in ("original", "modified")
     assert "probability" in cnn_res
-    assert "reasons" in cnn_res
+    assert "explanation" in cnn_res
+
+
+def test_predict_missing_checkpoint_is_unavailable():
+    result = predict(Image.new("RGB", (20, 20)), weights_path="missing_checkpoint.pt")
+    assert result["status"] == "unavailable"
+    assert result["class"] is None
+    assert result["available"] is False
