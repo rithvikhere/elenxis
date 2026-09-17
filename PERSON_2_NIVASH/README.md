@@ -14,7 +14,7 @@ Person 2 is responsible for the foundational data generation, optical character 
 |:---:|:---|:---:|:---|
 | **Phase 1** | Foundation, Scaffolding & Template Design Spec | **Completed (100%)** | [`PHASE_1_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_1_README.md) |
 | **Phase 2** | Template Synthesis Engine — Generating the Originals | **Completed (100%)** | [`PHASE_2_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_2_README.md) |
-| **Phase 3** | Manipulation Engine & Ground-Truth Metadata Creation | *Pending* | `PHASE_3_README.md` |
+| **Phase 3** | Controlled Manipulation Engine & Labeled Metadata | **Completed (100%)** | [`PHASE_3_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_3_README.md) |
 | **Phase 4** | Leakage-Free Dataset Splitting & Verification | *Pending* | `PHASE_4_README.md` |
 | **Phase 5** | Image Preprocessing & OCR Engine Selection | *Pending* | `PHASE_5_README.md` |
 | **Phase 6** | Field Extraction & Parser Heuristics | *Pending* | `PHASE_6_README.md` |
@@ -29,22 +29,28 @@ Person 2 is responsible for the foundational data generation, optical character 
 PERSON_2_NIVASH/
 ├── data/
 │   ├── raw/                  # 60 synthesized original receipt images
-│   ├── processed/            # Manipulated variants (Phase 3)
+│   ├── processed/            # 240 controlled manipulated variants
 │   ├── splits/               # Train, validation, and test split manifests (Phase 4)
-│   └── ground_truth.csv      # 60 reference ground-truth records (Phase 2)
+│   ├── ground_truth.csv      # 300 reference ground-truth records (Phases 2 & 3)
+│   └── metadata.csv          # 300 master labeled metadata index (Phase 3)
 ├── docs/
-│   ├── dataset.md            # Complete 10-point Template Design Specification
+│   ├── dataset.md            # Complete 11-point Template Design & Generation Specification
 │   ├── ocr.md                # Stub for Phases 5–6 (OCR Pipeline)
 │   ├── rules.md              # Stub for Phase 7 (Rule-Based Validation Engine)
-│   └── samples/              # Committed sample receipts (1 per layout family)
+│   └── samples/              # Committed sample receipts (Originals + Manipulations)
 │       ├── sample_family1_paylite.png
 │       ├── sample_family2_quickpe.png
-│       └── sample_family3_unipay.png
+│       ├── sample_family3_unipay.png
+│       ├── sample_amount_change_after.png
+│       ├── sample_date_change_after.png
+│       └── sample_recompress_after.png
 ├── src/
 │   ├── dataset/
-│   │   ├── __init__.py       # Package exports (templates, generators)
+│   │   ├── __init__.py       # Package exports (templates, manipulators, auditor)
 │   │   ├── config.py         # Central dataset constants & manipulation parameters
-│   │   └── templates.py      # Template synthesis engine for 3 layout families
+│   │   ├── templates.py      # Template synthesis engine for 3 layout families
+│   │   ├── manipulate.py     # Controlled manipulation engine (9 edit types)
+│   │   └── audit.py          # Dataset sanity auditor verifying CSV & disk integrity
 │   ├── ocr/
 │   │   └── __init__.py       # Stub for OCR package
 │   ├── rules/
@@ -55,10 +61,12 @@ PERSON_2_NIVASH/
 ├── tests/
 │   ├── __init__.py           # Tests package initialization
 │   ├── test_paths_config.py  # Path & configuration unit tests (Phase 1)
-│   └── test_templates.py     # Template generator & renderer unit tests (Phase 2)
+│   ├── test_templates.py     # Template generator unit tests (Phase 2)
+│   └── test_manipulate.py    # Manipulation engine & audit unit tests (Phase 3)
 ├── requirements.txt          # Pinned Person 2 dependencies with rationale
 ├── PHASE_1_README.md         # Phase 1 Summary & Documentation
 ├── PHASE_2_README.md         # Phase 2 Summary & Documentation
+├── PHASE_3_README.md         # Phase 3 Summary & Documentation
 └── README.md                 # This Person 2 Overview & Phase Progress Dashboard
 ```
 
@@ -70,12 +78,15 @@ PERSON_2_NIVASH/
 # 1. Activate virtual environment
 source .venv/bin/activate
 
-# 2. Run Person 2 unit tests (9/9 passing)
+# 2. Run Person 2 unit tests (12/12 passing)
 cd PERSON_2_NIVASH
 pytest tests/ -v
 
-# 3. Regenerate synthetic original receipts (Seed: 42)
-python -m src.dataset.templates --count 60 --samples
+# 3. Run dataset sanity audit
+python -m src.dataset.audit
+
+# 4. Regenerate manipulated dataset (Seed: 42)
+python -m src.dataset.manipulate --variants-per-original 4 --samples
 ```
 
 ---

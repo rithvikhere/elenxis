@@ -77,33 +77,36 @@ Every synthetic receipt guarantees the presence of eight core fields rendered at
 
 ---
 
-## 5. Ground Truth & Binary Labeling Scheme
+## 5. Label Semantics: Tri-State Classification & Rationale
 
-Every generated asset is tracked with dual labeling:
+We establish a clear, scientifically rigorous tri-state label taxonomy in `data/metadata.csv`:
 
-1. **Binary Class Label (`label`)**:
-   - `original`: An untampered, cleanly synthesized receipt image.
-   - `synthetic_fake`: A receipt exhibiting one or more controlled programmatic manipulations (Phase 3).
+1. **`original`** (Untouched Render):
+   - Pixel-perfect, lossless PNG render from the template generator with untouched layout and values.
 
-2. **Fine-Grained Manipulation Label (`edit_type`)**:
-   - Explicitly records which transformation was applied (`none` for originals).
+2. **`original_transformed`** (Benign Real-World Channel Degradation):
+   - Screenshots that underwent benign distribution transformations (e.g. `resize` downscale/upscale or `recompress` JPEG quality degradation) **without content alteration**.
+   - **Critical Rationale**: In real life, users frequently forward genuine payment receipts through WhatsApp or messaging apps, which compresses or resizes the image. If benign compression were labeled `synthetic_fake`, the CNN detector would learn to classify compression noise rather than semantic forgery. This label allows training models to distinguish compression from malicious editing.
+
+3. **`synthetic_fake`** (Malicious / Manipulated Forgery):
+   - Receipts exhibiting deliberate content tampering (`amount_change`, `date_change`, `transaction_id_change`, `text_insert`, `text_remove`, `font_alter`, `crop`).
 
 ---
 
-## 6. Planned Manipulation Categories (10 Edit Types)
+## 6. Manipulation Categories & Forensic Impact
 
-| # | `edit_type` | Description & Forensic Impact |
-|:---:|:---|:---|
-| 1 | `none` | Clean unmanipulated baseline image (`label = original`). |
-| 2 | `amount_change` | Numerical hero amount is replaced with a mismatched amount (e.g. `₹450.00` → `₹9,450.00`), causing pixel splice edges and font anti-aliasing mismatch. |
-| 3 | `date_change` | Timestamp modified to a future date or irregular format, triggering logical rule violations and localized resave noise. |
-| 4 | `transaction_id_change` | UTR modified to non-12-digit lengths or injected alphanumeric characters, triggering rule-based syntax errors. |
-| 5 | `text_insert` | Artificial watermarks, fake bank reference stamps, or extra lines spliced into white space. |
-| 6 | `text_remove` | Critical fields (e.g. UTR or Status) patched over with background color clones, leaving boundary noise. |
-| 7 | `font_alter` | Targeted field rendered with a subtle mismatched font family or incorrect font weight. |
-| 8 | `crop` | Asymmetric border cropping simulating careless merchant camera cropping, altering receipt proportions. |
-| 9 | `resize` | Bi-linear/nearest-neighbor downsampling followed by upsampling, causing global high-frequency blur. |
-| 10 | `recompress` | Selective JPEG recompression at quality 50–70, creating measurable ELA error deltas. |
+| # | `edit_type` | Label | Implementation & Forensic Impact |
+|:---:|:---|:---:|:---|
+| 1 | `none` | `original` | Clean unmanipulated baseline image. |
+| 2 | `amount_change` | `synthetic_fake` | Original amount patched over and overwritten with new value, creating localized edge splice boundaries. |
+| 3 | `date_change` | `synthetic_fake` | Timestamp modified (including 50% future dates) to trigger temporal rule engine violations. |
+| 4 | `transaction_id_change` | `synthetic_fake` | UTR overwritten with alpha prefixes, non-12 digit lengths, or mutated values to test format validators. |
+| 5 | `text_insert` | `synthetic_fake` | Spliced artificial verification stamps (e.g. `[ AUTHENTICATED BY BANK ]`) into white space. |
+| 6 | `text_remove` | `synthetic_fake` | Required fields (e.g. UTR or Recipient) blanked out with background color patches. |
+| 7 | `font_alter` | `synthetic_fake` | Field re-rendered with mismatched font weight, size, or baseline alignment. |
+| 8 | `crop` | `synthetic_fake` | Asymmetric margin cropping simulating merchant framing error. |
+| 9 | `resize` | `original_transformed` | Bilinear downscaling and upscaling (content identical). |
+| 10 | `recompress` | `original_transformed` | JPEG recompression at quality 50–70 to benchmark ELA sensitivity without altering transaction content. |
 
 ---
 
@@ -112,51 +115,82 @@ Every generated asset is tracked with dual labeling:
 $$\text{Image ID} = \texttt{tpl\{Family\}\_src\{SourceID\}\_\{EditType\}\_\{VariantID\}}$$
 
 - `tpl{F}`: Template family index (`1` = PayLite, `2` = QuickPe, `3` = UniPay).
-- `src{NNN}`: Master source generation index (`001` to `100`).
-- `{EditType}`: Manipulation tag (`none` for originals).
-- `{VariantID}`: Replication variation counter (`01`).
+- `src{NNN}`: Master source generation index (`001` to `060`).
+- `{EditType}`: Manipulation tag (e.g. `none`, `amount_change`, `recompress`).
+- `{VariantID}`: Replication variation counter (`01` to `04`).
 
-**Example Filename**: `tpl1_src001_none_01.png`
+**Example**: `tpl1_src004_amount_change_01.png`
 
-**Split Strategy**: When partitioning data into `train`, `val`, and `test` manifests in Phase 4, splits are grouped strictly by `src{NNN}`, preventing identical visual structures from leaking across splits.
+**Leakage Prevention**: All splits are grouped strictly on `source_id` (`tpl{F}_src{NNN}`). All variants deriving from source `004` are partitioned strictly into one split manifest.
 
 ---
 
 ## 8. Mandatory Watermark & Non-Interference Guarantee
 
-Every generated image is programmatically watermarked at the canvas footer ($y \ge 770\text{px}$):
+Every generated asset carries the footer watermark at $y = 770\text{px}$:
 
 ```
 DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY
 ```
 
-- **Coordinates**: Horizontally centered, 10–12pt sans-serif font, neutral gray.
+- **Coordinates**: Horizontally centered, 11pt font, neutral gray.
 - **Non-Interference**: Positioned at least 40px below the lowest transaction detail line to guarantee that OCR bounding boxes for transaction fields remain completely unoccluded.
 
 ---
 
 ## 9. Generation — Originals (Phase 2 Empirical Record)
 
-The Phase 2 Template Synthesis Engine has been executed to generate the unmanipulated baseline dataset:
-
 - **Total Originals Generated**: `60 images`
 - **Family 1 (`PayLite`)**: `20 images` (`tpl1_src001_none_01.png` to `tpl1_src020_none_01.png`)
 - **Family 2 (`QuickPe`)**: `20 images` (`tpl2_src021_none_01.png` to `tpl2_src040_none_01.png`)
 - **Family 3 (`UniPay`)**: `20 images` (`tpl3_src041_none_01.png` to `tpl3_src060_none_01.png`)
-- **Random Seed**: `42` (ensures 100% byte-identical reproducibility)
-- **Reference Date Boundary**: `2026-03-15` (all generated transaction dates fall strictly in the past)
-- **Reproduction Command**:
-  ```bash
-  python -m src.dataset.templates --count 60 --samples
-  ```
-- **Ground-Truth File**: [`data/ground_truth.csv`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/data/ground_truth.csv) (60 ground-truth answer key rows with exact amount, date, time, and 12-digit UTR values).
-- **Committed Sample Images**:
-  - `docs/samples/sample_family1_paylite.png`
-  - `docs/samples/sample_family2_quickpe.png`
-  - `docs/samples/sample_family3_unipay.png`
+- **Random Seed**: `42`
+- **Reproduction Command**: `python -m src.dataset.templates --count 60 --samples`
 
 ---
 
-## 10. Academic & Legal Safety Statement
+## 10. Generation — Manipulations (Phase 3 Empirical Record)
+
+- **Total Images in Full Dataset**: **`300 images`** (60 Originals + 240 Manipulated Variants)
+- **Variants per Original**: Exactly **4 variants** generated per source original.
+- **Random Seed**: `42`
+- **Reproduction Command**:
+  ```bash
+  python -m src.dataset.manipulate --variants-per-original 4 --samples
+  ```
+
+### Label Distribution (Class Balance)
+| Class Label | Count | Proportion | Semantic Meaning |
+|:---|:---:|:---:|:---|
+| `original` | 60 | 20.0% | Clean untouched synthetic originals |
+| `original_transformed` | 46 | 15.3% | Benign transformations (resize, recompress) |
+| `synthetic_fake` | 194 | 64.7% | Malicious content manipulations |
+| **Total** | **300** | **100.0%** | Comprehensive forensic dataset |
+
+*Note on Class Balance*: In a standard binary classification setup, `original` + `original_transformed` comprise **106 images (35.3%)** vs. `synthetic_fake` **194 images (64.7%)**. This intentional ratio reflects real-world anomaly detection tasks where anomalies occur across diverse edit classes while preserving substantial benign baselines.
+
+### Edit Type Breakdown
+| Edit Type | Label Class | Count |
+|:---|:---|:---:|
+| `none` | `original` | 60 |
+| `amount_change` | `synthetic_fake` | 24 |
+| `date_change` | `synthetic_fake` | 29 |
+| `transaction_id_change` | `synthetic_fake` | 28 |
+| `text_insert` | `synthetic_fake` | 27 |
+| `text_remove` | `synthetic_fake` | 25 |
+| `font_alter` | `synthetic_fake` | 31 |
+| `crop` | `synthetic_fake` | 30 |
+| `resize` | `original_transformed` | 22 |
+| `recompress` | `original_transformed` | 24 |
+| **Total** | | **300** |
+
+### Template Family Breakdown
+- **Family 1 (`PayLite`)**: `100 images`
+- **Family 2 (`QuickPe`)**: `100 images`
+- **Family 3 (`UniPay`)**: `100 images`
+
+---
+
+## 11. Academic & Legal Safety Statement
 
 > **Ethical & Safety Notice**: This synthetic dataset is constructed solely for academic research in document tamper detection and automated forensic verification. All templates are completely non-branded, all account information and UTRs are generated from random seeds, and no real-world banking ledgers, customer records, or payment gateways are accessed. The generator is restricted to producing detector training data and is expressly not designed or intended to produce usable payment evidence.
