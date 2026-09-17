@@ -1,0 +1,52 @@
+{
+  "false_positive_original_img_049": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_2_NIVASH\\data\\raw\\img_049.png",
+    "architecture": "resnet18_transfer_learning",
+    "target_layer": "resnet.layer4[-1].conv2",
+    "prediction": {
+      "class_index": 1,
+      "label": "modified",
+      "probability": 0.655425
+    },
+    "explained_class": {
+      "class_index": 1,
+      "label": "modified"
+    },
+    "output_paths": {
+      "original": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_049_original.png",
+      "heatmap": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_049_gradcam_heatmap.png",
+      "overlay": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_049_gradcam_overlay.png"
+    },
+    "warnings": [
+      "Grad-CAM highlights regions contributing to this model output; it does not prove a region was manipulated or that fraud occurred."
+    ]
+  },
+  "correct_modified_img_050": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_2_NIVASH\\data\\raw\\img_050.png",
+    "architecture": "resnet18_transfer_learning",
+    "target_layer": "resnet.layer4[-1].conv2",
+    "prediction": {
+      "class_index": 1,
+      "label": "modified",
+      "probability": 0.921886
+    },
+    "explained_class": {
+      "class_index": 1,
+      "label": "modified"
+    },
+    "output_paths": {
+      "original": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_050_original.png",
+      "heatmap": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_050_gradcam_heatmap.png",
+      "overlay": "C:\\elenxis\\PERSON_3_SANJAY\\results\\gradcam\\img_050_gradcam_overlay.png"
+    },
+    "warnings": [
+      "Grad-CAM highlights regions contributing to this model output; it does not prove a region was manipulated or that fraud occurred."
+    ]
+  },
+  "unavailable_categories": {
+    "correct_original": "None observed in the Phase 4 held-out evaluation.",
+    "false_negative": "None observed in the Phase 4 held-out evaluation."
+  }
+}
