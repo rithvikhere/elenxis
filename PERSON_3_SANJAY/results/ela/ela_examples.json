@@ -1,0 +1,78 @@
+{
+  "original": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_2_NIVASH\\data\\raw\\img_049.png",
+    "recompression_quality": 90,
+    "output_visualization_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\img_049_ela_q90.png",
+    "summary_statistics": {
+      "mean_absolute_difference": 0.8172,
+      "max_absolute_difference": 71.0,
+      "std_absolute_difference": 2.4439,
+      "p95_absolute_difference": 4.0,
+      "recompression_quality": 90,
+      "visualization_scale_factor": 15.0
+    },
+    "warnings": [
+      "ELA shows differences caused by JPEG recompression; it is not proof of manipulation.",
+      "Resizing, prior recompression, screenshots, and normal processing can create ELA differences."
+    ],
+    "explanation": "The visualisation amplifies pixel differences between the input and a controlled JPEG recompression."
+  },
+  "amount_modified": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_2_NIVASH\\data\\raw\\img_050.png",
+    "recompression_quality": 90,
+    "output_visualization_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\img_050_ela_q90.png",
+    "summary_statistics": {
+      "mean_absolute_difference": 0.8241,
+      "max_absolute_difference": 71.0,
+      "std_absolute_difference": 2.4524,
+      "p95_absolute_difference": 4.0,
+      "recompression_quality": 90,
+      "visualization_scale_factor": 15.0
+    },
+    "warnings": [
+      "ELA shows differences caused by JPEG recompression; it is not proof of manipulation.",
+      "Resizing, prior recompression, screenshots, and normal processing can create ELA differences."
+    ],
+    "explanation": "The visualisation amplifies pixel differences between the input and a controlled JPEG recompression."
+  },
+  "recompressed": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\recompressed_original.jpg",
+    "recompression_quality": 90,
+    "output_visualization_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\recompressed_original_ela_q90.png",
+    "summary_statistics": {
+      "mean_absolute_difference": 0.391,
+      "max_absolute_difference": 39.0,
+      "std_absolute_difference": 1.2826,
+      "p95_absolute_difference": 3.0,
+      "recompression_quality": 90,
+      "visualization_scale_factor": 15.0
+    },
+    "warnings": [
+      "ELA shows differences caused by JPEG recompression; it is not proof of manipulation.",
+      "Resizing, prior recompression, screenshots, and normal processing can create ELA differences."
+    ],
+    "explanation": "The visualisation amplifies pixel differences between the input and a controlled JPEG recompression."
+  },
+  "resized": {
+    "status": "available",
+    "input_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\resized_original.png",
+    "recompression_quality": 90,
+    "output_visualization_path": "C:\\elenxis\\PERSON_3_SANJAY\\results\\ela\\resized_original_ela_q90.png",
+    "summary_statistics": {
+      "mean_absolute_difference": 1.0708,
+      "max_absolute_difference": 77.0,
+      "std_absolute_difference": 2.4933,
+      "p95_absolute_difference": 5.0,
+      "recompression_quality": 90,
+      "visualization_scale_factor": 15.0
+    },
+    "warnings": [
+      "ELA shows differences caused by JPEG recompression; it is not proof of manipulation.",
+      "Resizing, prior recompression, screenshots, and normal processing can create ELA differences."
+    ],
+    "explanation": "The visualisation amplifies pixel differences between the input and a controlled JPEG recompression."
+  }
+}

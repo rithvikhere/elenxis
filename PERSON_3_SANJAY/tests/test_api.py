@@ -15,7 +15,8 @@ def test_api_surface():
     
     forensics_res = analyze_image(img)
     assert forensics_res["status"] == "available"
-    assert "signals" in forensics_res
+    assert "ela" in forensics_res
+    assert "metadata" in forensics_res
     
     cnn_res = predict(img)
     assert cnn_res["available"] is True
