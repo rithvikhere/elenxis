@@ -1,114 +1,101 @@
-# Person 2 (Nivash) — Dataset, OCR & Rule Engine Subsystem
+# Person 2 — Dataset, OCR & Rule Engine Subsystem
 **UPI Transaction Fraud Forensics Platform (IDP)**
-*Second-Year CSE (AI & ML) — Academic Project Review (30% Milestone)*
+*B.Tech CSE (AI & ML), SCOPE · VIT Chennai · 12-Month Academic Project*
 
 ---
 
-## 📌 Module Overview
+## 📌 Phase 1 Completed: Foundation, Scaffolding & Template Design Specification
 
-Person 2 is responsible for the foundational data and heuristic intelligence layer of the platform:
-1. **Synthetic Dataset Generation & Ground Truth**: 60 controlled synthetic UPI payment receipt images across 3 templates (ApexPay, ZenithUPI, NovaPay) with split isolation (`train` 60%, `val` 20%, `test` 20%) and zero data leakage.
-2. **OCR Preprocessing & Extraction Pipeline (`src/ocr/`)**: Tesseract OCR (PSM 3) with configurable preprocessing pipelines (contrast enhancement, adaptive thresholding, denoise) and resilient field parsing (Amount, Date, Time, UTR, Template, Recipient).
-3. **Rule-Based Validation Engine (`src/rules/`)**: Deterministic verification using 11 atomic rule checks, calculating weighted anomaly scores and explainable violations for Person 1's ensemble aggregator.
-4. **Empirical Evaluation & Unit Test Suite**: Comprehensive measurement script (`scripts/evaluate_ocr_rules.py`) and 78 unit tests (`tests/`).
-5. **Technical Documentation (`docs/`)**: Rigorous academic documentation for `dataset.md`, `ocr.md`, and `rules.md`.
+In **Phase 1 of 8**, the foundational architecture, central path manager, configuration system, and comprehensive template design specifications were implemented for Person 2's subsystem.
+
+### What Was Done in Phase 1:
+
+1. **Self-Contained Scaffolding & Directory Layout**:
+   - Structured the repository according to the master plan with clear module boundaries (`src/dataset/`, `src/ocr/`, `src/rules/`, `src/utils/`, `data/splits/`, `docs/`, `tests/`).
+   - Every package contains appropriate `__init__.py` interface exports.
+
+2. **Central Path Resolution (`src/utils/paths.py`)**:
+   - Zero hard-coded absolute paths or fragile relative path concatenations (`../../`).
+   - Exposes dynamic path constants (`PROJECT_ROOT`, `DATA_DIR`, `RAW_DIR`, `PROCESSED_DIR`, `SPLITS_DIR`, `METADATA_CSV`, `DOCS_DIR`, `TESTS_DIR`, `SRC_DIR`).
+   - Includes automatic directory provisioning utility `ensure_dir(path)`.
+
+3. **Central Dataset Configuration (`src/dataset/config.py`)**:
+   - Fixed reproducibility seed (`RANDOM_SEED = 42`).
+   - Mobile canvas dimensions (`IMAGE_SIZE = (400, 800)`).
+   - Fictional, non-branded template identities (`PayLite`, `QuickPe`, `UniPay`) acting as stand-ins for 3 layout families without trademark infringement.
+   - 10 planned manipulation categories (`none`, `amount_change`, `date_change`, `transaction_id_change`, `text_insert`, `text_remove`, `font_alter`, `crop`, `resize`, `recompress`).
+   - Standard 12-digit UPI reference ID regex constraints and mandatory academic watermark constant.
+
+4. **Complete Template Design Specification (`docs/dataset.md`)**:
+   - Comprehensive 10-point architectural specification authored before writing code.
+   - Detailed structural comparison of the 3 template families (field order, visual hierarchy, status banners, card containers, date formats).
+   - Standardized coordinate anchors and field datatypes for all 8 mandatory fields.
+   - Dual-labeling scheme (`original` vs `synthetic_fake` + `edit_type`).
+   - Source-grouped naming convention (`tpl{F}_src{NNN}_{edit}_{VV}`) to strictly prevent data leakage across train/val/test splits.
+   - Ethical and academic safety statement.
+
+5. **Dependency Management (`requirements.txt`)**:
+   - Clean, pinned dependencies with 1-line rationale comments (`pillow`, `opencv-python`, `numpy`, `pandas`, `pytest`, `python-dateutil`).
+
+6. **Documentation Stubs & Verification**:
+   - `docs/ocr.md` and `docs/rules.md` stubs pointing to upcoming phases.
+   - Unit test suite in `tests/test_paths_config.py` (4/4 passing tests).
 
 ---
 
-## 📂 Directory Structure
+## 📂 Phase 1 Directory Structure
 
 ```
 PERSON_2_NIVASH/
 ├── data/
-│   ├── metadata.csv          # Ground-truth labels, splits, bounding boxes, and field values
-│   └── raw/                  # 60 synthetic receipt images (img_001.png to img_060.png)
+│   ├── raw/                  # Storage for generated original templates
+│   ├── processed/            # Storage for manipulated variants
+│   └── splits/               # Train, validation, and test split manifests
 ├── docs/
-│   ├── dataset.md            # Dataset specification, template schemas, and split strategy
-│   ├── ocr.md                # OCR pipeline, preprocessing comparison, and error analysis
-│   └── rules.md              # Rule catalogue, anomaly formulation, and evaluation metrics
-├── scripts/
-│   ├── generate_dataset.py   # Deterministic dataset generation script
-│   └── evaluate_ocr_rules.py # Empirical evaluation benchmark across all splits
+│   ├── dataset.md            # Complete 10-point Template Design Specification
+│   ├── ocr.md                # Stub for Phases 5–6 (OCR Pipeline)
+│   └── rules.md              # Stub for Phase 7 (Rule-Based Validation Engine)
 ├── src/
+│   ├── dataset/
+│   │   ├── __init__.py       # Dataset package exports
+│   │   └── config.py         # Central dataset constants & manipulation parameters
 │   ├── ocr/
-│   │   ├── __init__.py       # Public API: extract_transaction_fields, preprocess_image
-│   │   ├── extractor.py      # Main OCR pipeline (PSM 3 page segmentation)
-│   │   ├── field_parser.py   # Regex & heuristic normalization engine
-│   │   └── preprocess.py     # Image loading & transformation pipelines
-│   └── rules/
-│       ├── __init__.py       # Public API: validate_transaction
-│       ├── rule_engine.py    # Weighted anomaly scoring & verdict generation
-│       └── validators.py     # 11 atomic rule check functions
+│   │   └── __init__.py       # Stub for OCR package
+│   ├── rules/
+│   │   └── __init__.py       # Stub for Rules package
+│   └── utils/
+│       ├── __init__.py       # Utility package exports
+│       └── paths.py          # Central path resolver & directory manager
 ├── tests/
-│   ├── test_field_parser.py  # Regex & parser unit tests
-│   ├── test_ocr_extractor.py # End-to-end OCR extraction tests
-│   ├── test_preprocess.py    # Image transformation tests
-│   └── test_rules.py         # Rule engine & violation tests
-└── README.md                 # Person 2 Quickstart & Architecture Guide
+│   ├── __init__.py           # Tests package initialization
+│   └── test_paths_config.py  # Automated tests for paths & config constants
+├── requirements.txt          # Pinned Person 2 dependencies with rationale
+└── README.md                 # This Phase 1 Overview & Quickstart Guide
 ```
 
 ---
 
-## 🚀 Quickstart & Execution
+## 🚀 Verification & Quickstart
 
-### 1. Run Unit Tests (78 tests)
+To verify the Phase 1 setup locally:
+
 ```bash
-cd PERSON_2_NIVASH
-pytest tests/ -v
-```
+# 1. Activate virtual environment
+source .venv/bin/activate
 
-### 2. Run Empirical Evaluation Script
-```bash
+# 2. Run Phase 1 automated tests
 cd PERSON_2_NIVASH
-python scripts/evaluate_ocr_rules.py
-```
+pytest tests/test_paths_config.py -v
 
-### 3. Re-generate Synthetic Dataset (Optional)
-```bash
-cd PERSON_2_NIVASH
-python scripts/generate_dataset.py
+# 3. Test path and configuration imports
+python -c "from src.utils.paths import PROJECT_ROOT; print('Root:', PROJECT_ROOT)"
+python -c "from src.dataset import config; print('Templates:', config.TEMPLATE_NAMES)"
 ```
 
 ---
 
-## 📊 Key Evaluation Metrics (Empirically Measured)
-
-### OCR Extraction Accuracy (Test Split - 12 images)
-- **Extraction Success Rate**: `100.0%`
-- **Exact Amount Accuracy**: `100.0%`
-- **Exact Date Accuracy**: `100.0%`
-- **Exact UTR Accuracy**: `100.0%`
-
-### Rule Engine Tamper Detection (Overall Dataset - 60 images)
-- **Precision**: `93.9%` (Test Split: `100.0%`)
-- **Recall**: `68.9%` (Test Split: `66.7%`)
-- **F1-Score**: `79.5%` (Test Split: `80.0%`)
-- **Specificity**: `86.7%` (Test Split: `100.0%`)
-- **Accuracy**: `73.3%` (Test Split: `75.0%`)
-
----
-
-## 🔗 Integration Contract for Person 1 (Ensemble / UI)
-
-```python
-from src.ocr import extract_transaction_fields
-from src.rules import validate_transaction
-
-# Step 1: Extract fields via OCR
-ocr_output = extract_transaction_fields("path/to/receipt.png")
-
-# Step 2: Validate fields via Rule Engine
-rule_verdict = validate_transaction(ocr_output)
-
-# Results ready for UI display or Fusion with Person 3's CNN score:
-print(rule_verdict["verdict"])        # 'LIKELY_LEGITIMATE' or 'SUSPICIOUS'
-print(rule_verdict["anomaly_score"])  # Float between 0.0 and 1.0
-print(rule_verdict["explanations"])   # List of plain-English violation descriptions
-```
-
----
-
-## 🎓 Academic Defense & Integrity
-- **Synthetic Watermark**: Every receipt image contains a visible footer watermark `DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY`.
-- **Zero Data Leakage**: All 60 receipts were generated with seeded independent variations and strictly partitioned into 36 train, 12 validation, and 12 test records.
-- **Explainability**: No black-box decisions in the rule layer — every flagged anomaly directly cites the offending field and the exact validation rule violated.
+## 🛡️ Academic & Legal Safety Rules
+- **No Real Brand Names**: Uses purely fictional standalone template layouts (`PayLite`, `QuickPe`, `UniPay`).
+- **Zero Sensitive Data**: No real bank accounts, real UTRs, phone numbers, or private financial ledgers.
+- **Mandatory Watermark**: `DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY` on every generated asset.
+- **Detector Purpose Only**: Designed solely to train and evaluate fraud forensics detectors; not intended to produce usable payment evidence.
