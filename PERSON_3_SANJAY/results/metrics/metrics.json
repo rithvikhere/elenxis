@@ -1,0 +1,25 @@
+{
+  "positive_class": "modified",
+  "test_count": 12,
+  "test_groups": [
+    12,
+    13,
+    14
+  ],
+  "accuracy": 0.75,
+  "precision": 0.75,
+  "recall": 1.0,
+  "f1_score": 0.8571,
+  "confusion_matrix": {
+    "true_negatives": 0,
+    "false_positives": 3,
+    "false_negatives": 0,
+    "true_positives": 9
+  },
+  "support": {
+    "total_samples": 12,
+    "original_samples": 3,
+    "modified_samples": 9
+  },
+  "roc_auc": 0.7778
+}
