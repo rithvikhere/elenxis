@@ -124,7 +124,7 @@ def test_metadata_csv_schema(tmp_path):
 
 def test_audit_dataset_passes():
     res = audit_dataset()
-    assert res["passed"] is True
-    assert res["total_images"] == 300
-    assert len(res["missing_files_on_disk"]) == 0
-    assert len(res["unregistered_disk_files"]) == 0
+    assert res["all_checks_passed"] is True
+    assert res["summary"]["total_images"] == 300
+    assert res["check_details"]["2_file_existence"]["missing_count"] == 0
+    assert res["check_details"]["3_orphan_files"]["orphan_count"] == 0

@@ -6,7 +6,8 @@ UPI Transaction Fraud Forensics Platform.
 from . import config
 from .templates import generate_originals, generate_fictional_record, RENDERERS
 from .manipulate import generate_manipulated_dataset, MANIPULATORS
-from .audit import audit_dataset
+from .split import split_dataset
+from .audit import audit_dataset_integrity
 
 __all__ = [
     "config",
@@ -15,5 +16,6 @@ __all__ = [
     "RENDERERS",
     "generate_manipulated_dataset",
     "MANIPULATORS",
-    "audit_dataset",
+    "split_dataset",
+    "audit_dataset_integrity",
 ]

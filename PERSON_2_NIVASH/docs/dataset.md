@@ -1,29 +1,30 @@
-# Dataset & Template Design Specification
-**Person 2 — UPI Transaction Fraud Forensics Platform**
+# Complete Dataset & Forensics Specification
+**Person 2 — UPI Transaction Fraud Forensics Platform**  
 *B.Tech CSE (AI & ML), SCOPE · VIT Chennai*
 
 ---
 
-## 1. Why a Synthetic Dataset?
+## 1. Why Synthetic? Why Fictional? Ethics Statement
 
-In payment receipt fraud analysis, **no publicly available, labeled ground-truth dataset** of real vs. manipulated UPI payment screenshots exists due to banking privacy laws, KYC regulations, and PII protection constraints. Scraped online receipts carry unknown editing histories and privacy violations. 
+### Motivation & Privacy Imperative
+In payment receipt forensics, **no publicly available, labeled ground-truth dataset** of real vs. manipulated UPI payment screenshots exists due to banking confidentiality, KYC compliance, and PII protection regulations (IT Act 2000, GDPR, RBI privacy mandates). Online receipts scraped from social media or search engines contain unknown manipulation histories, low-resolution artifacts, and personal data.
 
-To bridge this data-availability gap, our project creates a **controlled, reproducible synthetic dataset generator**. Building this controlled dataset generator and ground-truth metadata schema is a foundational academic research contribution of this project.
+To overcome this constraint without violating user privacy, our platform introduces a **controlled, parametric synthetic dataset generator**. Synthesizing images from clean mathematical primitives allows exact, pixel-accurate ground-truth tracking for every text bounding box, amount, timestamp, and reference number.
+
+### Fictional Standing & Trademark Ethics
+To adhere strictly to academic integrity and trademark law:
+- **Zero Real-World Trademarks**: We construct three fictional stand-in payment application identities: `PayLite`, `QuickPe`, and `UniPay`.
+- **Fictional Data Only**: All transaction amounts, dates, timestamps, 12-digit UTRs, and recipient names are generated pseudo-randomly from controlled synthetic distributions.
+- **Detector-Only Purpose**: Synthetic receipts are generated exclusively to train and benchmark forensic tamper detectors and rule engines. Every image embeds a visible footer watermark:
+  ```
+  DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY
+  ```
 
 ---
 
-## 2. Why Fictional, Non-Branded Templates?
+## 2. Template Layout Families & Structural Variations
 
-To adhere strictly to academic integrity, ethical research principles, and trademark safety:
-- **No Real Brand Names or Logos**: We invent fictional stand-in payment application identities (`PayLite`, `QuickPe`, `UniPay`).
-- **No Real Financial Data**: All account numbers, virtual payment addresses (VPAs), UTRs, and names are generated from purely fictional mock registries.
-- **Detector-Only Purpose**: Assets exist strictly to train and evaluate detection algorithms, never to produce deceptive payment instruments for real-world use.
-
----
-
-## 3. Template Layout Families (3 Distinct Structures)
-
-To prevent the OCR and CNN pipelines from overfitting to a single rigid visual structure, we define **three structurally distinct layout families**:
+To ensure downstream CNN and OCR models do not overfit to a single visual layout, we designed **three structurally distinct layout families**:
 
 ```
 +---------------------------+  +---------------------------+  +---------------------------+
@@ -50,147 +51,216 @@ To prevent the OCR and CNN pipelines from overfitting to a single rigid visual s
 
 ### Structural Comparison Matrix
 
-| Design Dimension | Family 1: `PayLite` | Family 2: `QuickPe` | Family 3: `UniPay` |
+| Layout Dimension | Family 1: `PayLite` | Family 2: `QuickPe` | Family 3: `UniPay` |
 |:---|:---|:---|:---|
-| **Visual Theme** | Flat Header Banner (Primary Blue `#1A73E8`) | Elevated Floating Card (`#1E2738` on `#121824`) | Clean Minimalist Two-Tone Grid (`#FAFAFA`) |
-| **Hero Amount Placement** | Large centered hero typography ($y \approx 215\text{px}$) | Inside top elevated card ($y \approx 170\text{px}$) | Left-aligned bold sub-header ($y \approx 105\text{px}$) |
-| **Date / Time Formatting** | Textual month (`12 Mar 2026, 10:15 AM`) | Compact inline (`12-03-2026, 10:15 AM`) | ISO format (`2026-03-12, 10:15`) |
-| **UTR / Reference Label** | `UPI Ref (UTR)` | `Reference ID (UTR)` | `Bank Ref (UTR)` |
-| **Status Indicator** | Central circle with success tick icon | Top-right pill badge: `[✓ COMPLETED]` | Top-right rectangular badge: `[ SUCCESS ]` |
+| **Visual Architecture** | Top Primary Blue Banner (`#1A73E8`) | Elevated Floating Card on Dark BG (`#1E2738`) | Clean Minimalist Two-Tone Grid (`#FAFAFA`) |
+| **Hero Amount Position** | Centered hero typography ($y \approx 215\text{px}$) | Inside top floating container ($y \approx 170\text{px}$) | Left-aligned bold subheader ($y \approx 105\text{px}$) |
+| **Date & Time Syntax** | Textual month (`12 Mar 2026, 10:15 AM`) | Compact inline (`12-03-2026, 10:15 AM`) | ISO format (`2026-03-12, 10:15`) |
+| **UTR / Reference Key** | `UPI Ref (UTR)` | `Reference ID (UTR)` | `Bank Ref (UTR)` |
+| **Confirmation Badge** | Green circular checkmark glyph | Pill badge: `[✓ COMPLETED]` | Bordered badge: `[ SUCCESS ]` |
+| **Canvas Dimensions** | 400 × 800 pixels | 400 × 800 pixels | 400 × 800 pixels |
 
 ---
 
-## 4. Standard Field Definitions & Coordinate Anchors
+## 3. Label Taxonomy & Tri-State Classification Semantics
 
-Every synthetic receipt guarantees the presence of eight core fields rendered at structurally bounded coordinates:
+Our metadata schema enforces a rigorous tri-state label taxonomy in `data/metadata.csv` and split manifests:
 
-| Field Name | Description | Datatype | Example |
-|:---|:---|:---:|:---|
-| `app_name` | Fictional application brand | `str` | `PayLite`, `QuickPe`, `UniPay` |
-| `status` | Confirmation status keyword | `str` | `Paid Successfully`, `Payment Completed`, `SUCCESS` |
-| `amount` | Monetary value with currency indicator | `str` / `float` | `₹450.00`, `₹1,250.50`, `₹29,873.87` |
-| `payee` | Recipient business / contact name | `str` | `Metro Book Store`, `Apex Mart`, `Sunrise Cafe` |
-| `payer` | Sender account description | `str` | `Synthetic Student Account`, `Demo Academic User` |
-| `date` | Transaction execution date | `str` | `12 Mar 2026`, `12-03-2026`, `2026-03-12` |
-| `time` | Transaction timestamp (12h or 24h) | `str` | `10:15 AM`, `02:45 PM`, `14:30` |
-| `transaction_id` | 12-digit standard UPI reference number | `str` | `425631219101`, `637940265423` |
+1. **`original`** ($N=60$):
+   - Untouched, lossless PNG renders from the template synthesis engine. Represents ground-truth clean financial transactions.
+2. **`original_transformed`** ($N=46$):
+   - Screenshots subjected to benign transformations (`resize` down/upscaling or `recompress` JPEG degradation) **without content tampering**.
+   - **Crucial Scientific Rationale**: Real-world payment receipts are routinely shared via WhatsApp, Telegram, or email, introducing compression artifacts. If benign channel transformations were labeled as `synthetic_fake`, machine learning models would overfit to high-frequency compression noise rather than semantic forgery. This label allows training models to distinguish benign channel noise from fraudulent tampering.
+3. **`synthetic_fake`** ($N=194$):
+   - Maliciously manipulated receipts exhibiting semantic, visual, or structural tampering (`amount_change`, `date_change`, `transaction_id_change`, `text_insert`, `text_remove`, `font_alter`, `crop`).
 
 ---
 
-## 5. Label Semantics: Tri-State Classification & Rationale
+## 4. Manipulation Categories & Forensic Artifacts
 
-We establish a clear, scientifically rigorous tri-state label taxonomy in `data/metadata.csv`:
-
-1. **`original`** (Untouched Render):
-   - Pixel-perfect, lossless PNG render from the template generator with untouched layout and values.
-
-2. **`original_transformed`** (Benign Real-World Channel Degradation):
-   - Screenshots that underwent benign distribution transformations (e.g. `resize` downscale/upscale or `recompress` JPEG quality degradation) **without content alteration**.
-   - **Critical Rationale**: In real life, users frequently forward genuine payment receipts through WhatsApp or messaging apps, which compresses or resizes the image. If benign compression were labeled `synthetic_fake`, the CNN detector would learn to classify compression noise rather than semantic forgery. This label allows training models to distinguish compression from malicious editing.
-
-3. **`synthetic_fake`** (Malicious / Manipulated Forgery):
-   - Receipts exhibiting deliberate content tampering (`amount_change`, `date_change`, `transaction_id_change`, `text_insert`, `text_remove`, `font_alter`, `crop`).
-
----
-
-## 6. Manipulation Categories & Forensic Impact
-
-| # | `edit_type` | Label | Implementation & Forensic Impact |
+| # | `edit_type` | Label Class | Forensic Mechanism & Visual Indicator |
 |:---:|:---|:---:|:---|
-| 1 | `none` | `original` | Clean unmanipulated baseline image. |
-| 2 | `amount_change` | `synthetic_fake` | Original amount patched over and overwritten with new value, creating localized edge splice boundaries. |
-| 3 | `date_change` | `synthetic_fake` | Timestamp modified (including 50% future dates) to trigger temporal rule engine violations. |
-| 4 | `transaction_id_change` | `synthetic_fake` | UTR overwritten with alpha prefixes, non-12 digit lengths, or mutated values to test format validators. |
-| 5 | `text_insert` | `synthetic_fake` | Spliced artificial verification stamps (e.g. `[ AUTHENTICATED BY BANK ]`) into white space. |
-| 6 | `text_remove` | `synthetic_fake` | Required fields (e.g. UTR or Recipient) blanked out with background color patches. |
-| 7 | `font_alter` | `synthetic_fake` | Field re-rendered with mismatched font weight, size, or baseline alignment. |
-| 8 | `crop` | `synthetic_fake` | Asymmetric margin cropping simulating merchant framing error. |
-| 9 | `resize` | `original_transformed` | Bilinear downscaling and upscaling (content identical). |
-| 10 | `recompress` | `original_transformed` | JPEG recompression at quality 50–70 to benchmark ELA sensitivity without altering transaction content. |
+| 1 | `none` | `original` | Clean pristine baseline image. |
+| 2 | `amount_change` | `synthetic_fake` | Patches background over transaction value and overwrites with modified amount, creating edge splice discontinuities. |
+| 3 | `date_change` | `synthetic_fake` | Overwrites timestamp (50% future dates), creating temporal rule violations and bounding box misalignments. |
+| 4 | `transaction_id_change` | `synthetic_fake` | Overwrites 12-digit UTR with alphabetic prefixes or invalid lengths, violating NPCI format standards. |
+| 5 | `text_insert` | `synthetic_fake` | Injects artificial validation stamps (e.g. `[ AUTHENTICATED BY BANK ]`) into empty canvas areas. |
+| 6 | `text_remove` | `synthetic_fake` | Blanks out mandatory fields (e.g. recipient or UTR) using local background color infill. |
+| 7 | `font_alter` | `synthetic_fake` | Re-renders legitimate field text using inconsistent font weights, point sizes, or vertical baselines. |
+| 8 | `crop` | `synthetic_fake` | Crops canvas asymmetrically (10–30px) to simulate intentional UI framing mutilation. |
+| 9 | `resize` | `original_transformed` | Downscales to 60–80% and bilinearly upscales back to 400×800 canvas (content unaltered). |
+| 10 | `recompress` | `original_transformed` | Saves with JPEG quality factor 50–70 to test Error Level Analysis (ELA) sensitivity without content changes. |
 
 ---
 
-## 7. Systematic Naming Convention & Leakage Prevention
+## 5. Dataset Statistics & Actual Realized Counts
 
-$$\text{Image ID} = \texttt{tpl\{Family\}\_src\{SourceID\}\_\{EditType\}\_\{VariantID\}}$$
+### Overall Dataset Distribution ($N = 300$)
+- **Total Images**: **300**
+- **Original Source Templates**: **60**
+- **Manipulated Variants**: **240** (exactly 4 variants per original source)
 
-- `tpl{F}`: Template family index (`1` = PayLite, `2` = QuickPe, `3` = UniPay).
-- `src{NNN}`: Master source generation index (`001` to `060`).
-- `{EditType}`: Manipulation tag (e.g. `none`, `amount_change`, `recompress`).
-- `{VariantID}`: Replication variation counter (`01` to `04`).
+### Actual Counts by Split Manifest
 
-**Example**: `tpl1_src004_amount_change_01.png`
+| Manifest Split | Total Images | Total Sources | `original` | `original_transformed` | `synthetic_fake` | Realized Ratio |
+|:---|:---:|:---:|:---:|:---:|:---:|:---:|
+| **TRAIN** (`train.csv`) | 210 | 42 | 42 (20.0%) | 30 (14.3%) | 138 (65.7%) | **70.0%** |
+| **VAL** (`val.csv`) | 45 | 9 | 9 (20.0%) | 13 (28.9%) | 23 (51.1%) | **15.0%** |
+| **TEST** (`test.csv`) | 45 | 9 | 9 (20.0%) | 3 (6.7%) | 33 (73.3%) | **15.0%** |
+| **TOTAL** | **300** | **60** | **60 (20.0%)** | **46 (15.3%)** | **194 (64.7%)** | **100.0%** |
 
-**Leakage Prevention**: All splits are grouped strictly on `source_id` (`tpl{F}_src{NNN}`). All variants deriving from source `004` are partitioned strictly into one split manifest.
+### Actual Counts by Template Family
+
+| Template Family | Name | Train Images | Val Images | Test Images | Total Images |
+|:---|:---|:---:|:---:|:---:|:---:|
+| **Family 1** | `PayLite` | 70 | 15 | 15 | **100** |
+| **Family 2** | `QuickPe` | 70 | 15 | 15 | **100** |
+| **Family 3** | `UniPay` | 70 | 15 | 15 | **100** |
+| **Total** | | **210** | **45** | **45** | **300** |
+
+### Actual Counts by Edit Type
+
+| Edit Type | Label Class | Train Count | Val Count | Test Count | Total Count |
+|:---|:---|:---:|:---:|:---:|:---:|
+| `none` | `original` | 42 | 9 | 9 | **60** |
+| `amount_change` | `synthetic_fake` | 19 | 1 | 4 | **24** |
+| `date_change` | `synthetic_fake` | 20 | 5 | 4 | **29** |
+| `transaction_id_change` | `synthetic_fake` | 20 | 4 | 4 | **28** |
+| `text_insert` | `synthetic_fake` | 20 | 2 | 5 | **27** |
+| `text_remove` | `synthetic_fake` | 19 | 2 | 4 | **25** |
+| `font_alter` | `synthetic_fake` | 19 | 5 | 7 | **31** |
+| `crop` | `synthetic_fake` | 21 | 4 | 5 | **30** |
+| `resize` | `original_transformed` | 15 | 6 | 1 | **22** |
+| `recompress` | `original_transformed` | 15 | 7 | 2 | **24** |
+| **Total** | | **210** | **45** | **45** | **300** |
 
 ---
 
-## 8. Mandatory Watermark & Non-Interference Guarantee
+## 6. Naming Convention & Traceability
 
-Every generated asset carries the footer watermark at $y = 770\text{px}$:
+Every asset follows a strict hierarchical naming convention:
+$$\text{image\_id} = \texttt{tpl\{Family\}\_src\{SourceID\}\_\{EditType\}\_\{VariantID\}}$$
+
+- `tpl{F}`: Template layout index (`1` = PayLite, `2` = QuickPe, `3` = UniPay).
+- `src{NNN}`: Master source generation ID (`001` through `060`).
+- `{EditType}`: Specific perturbation tag.
+- `{VariantID}`: Replication index (`01` through `04`).
+
+**Example**: `tpl1_src001_amount_change_02.png` is the 2nd variant derived from source `tpl1_src001_none_01`.
+
+---
+
+## 7. The Splitting Strategy: Plain Language & Leakage Prevention
+
+### What is Data Leakage?
+Data leakage occurs when information from outside the training dataset is inadvertently used to train the machine learning model. In our dataset, each original receipt has 4 derived manipulated variants that share the exact same background geometry, recipient name, initial styling, and layout structure.
+
+### What Would Go Wrong with Naive Random Splitting?
+If we split randomly by `image_id`:
+1. `tpl1_src001_none_01.png` could be placed in `train.csv`.
+2. `tpl1_src001_amount_change_02.png` could be placed in `test.csv`.
+Because the CNN model has already seen the identical template layout, colors, and fonts during training, it would simply memorize the source receipt visual fingerprint rather than learning generalizable tamper indicators. This produces artificially inflated 99%+ test accuracy that fails completely in real-world deployment.
+
+### How We Prevent Leakage
+We enforce **Group-Aware Splitting by `source_id`**:
+- All 5 images belonging to source `tpl1_src001` (1 original + 4 variants) are assigned to the **same split together, always**.
+- Split assignment is stratified by `template_family` at the group level to ensure equal layout representation.
+- Cross-split verification via 256-bit perceptual difference hashing (dHash) formally proves **0% source overlap and 0 cross-split visual duplicates**.
+
+---
+
+## 8. Realized Split Ratios
+
+The splitting algorithm achieved exactly the target group proportions:
+- **Train Set**: 42 sources $\rightarrow$ **210 images (70.0%)**
+- **Validation Set**: 9 sources $\rightarrow$ **45 images (15.0%)**
+- **Test Set**: 9 sources $\rightarrow$ **45 images (15.0%)**
+
+---
+
+## 9. Class Balance & Honest Evaluation of Skew
+
+- In a binary forensic framing (Legitimate vs. Manipulated):
+  - **Legitimate / Benign** (`original` + `original_transformed`): **106 images (35.3%)**
+  - **Manipulated / Tampered** (`synthetic_fake`): **194 images (64.7%)**
+- **Distribution across splits**:
+  - `original` is exactly 20.0% in Train, Val, and Test.
+  - `original_transformed` has slight variance (Train: 14.3%, Val: 28.9%, Test: 6.7%) because variants are sampled pseudo-randomly per source.
+- Downstream models must evaluate with **Precision, Recall, F1-Score, and ROC-AUC** in addition to raw accuracy to account for class balance.
+
+---
+
+## 10. Dataset Integrity Audit Results & Reproduction
+
+Our automated audit script `src/dataset/audit.py` executes 11 comprehensive verification checks:
 
 ```
-DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY
+======================================================================
+DATASET INTEGRITY & DATA LEAKAGE AUDIT REPORT — PERSON 2
+======================================================================
+Total Images Audited    : 300
+Train Split Manifest    : 210 images (42 unique sources, 70.0%)
+Val Split Manifest      : 45 images (9 unique sources, 15.0%)
+Test Split Manifest     : 45 images (9 unique sources, 15.0%)
+----------------------------------------------------------------------
+[VERIFICATION CHECKS BREAKDOWN]
+  [✓ PASS] 1. Group Disjointness (Zero Source Leakage)
+  [✓ PASS] 2. File Existence on Disk
+  [✓ PASS] 3. Zero Orphan Disk Files
+  [✓ PASS] 4. Zero Duplicate Image IDs
+  [✓ PASS] 5. Template Family Coverage across all splits
+  [✓ PASS] 6. Label Class Coverage across all splits
+  [✓ PASS] 7. Class Balance Consistency Reporting
+  [✓ PASS] 8. Cross-Split Perceptual Near-Duplicate Hash Check (256-bit dHash)
+  [✓ PASS] 9. Image Header & Pixel Decoding Check
+  [✓ PASS] 10. Dimension Outlier & Canvas Constraint Check
+  [✓ PASS] 11. Ground-Truth Answer Key Coverage
+----------------------------------------------------------------------
+🎉 OVERALL VERDICT: 100% AUDIT PASSED. DATASET IS LEAKAGE-FREE.
+======================================================================
 ```
 
-- **Coordinates**: Horizontally centered, 11pt font, neutral gray.
-- **Non-Interference**: Positioned at least 40px below the lowest transaction detail line to guarantee that OCR bounding boxes for transaction fields remain completely unoccluded.
+### How to Re-Run the Audit
+```bash
+python -m src.dataset.audit
+```
 
 ---
 
-## 9. Generation — Originals (Phase 2 Empirical Record)
+## 11. Deterministic Reproduction Guide
 
-- **Total Originals Generated**: `60 images`
-- **Family 1 (`PayLite`)**: `20 images` (`tpl1_src001_none_01.png` to `tpl1_src020_none_01.png`)
-- **Family 2 (`QuickPe`)**: `20 images` (`tpl2_src021_none_01.png` to `tpl2_src040_none_01.png`)
-- **Family 3 (`UniPay`)**: `20 images` (`tpl3_src041_none_01.png` to `tpl3_src060_none_01.png`)
-- **Random Seed**: `42`
-- **Reproduction Command**: `python -m src.dataset.templates --count 60 --samples`
+The complete dataset pipeline can be regenerated identically from scratch using the global random seed `42`:
 
----
+```bash
+# Step 1: Generate 60 Clean Originals (Phase 2)
+python -m src.dataset.templates --count 60 --samples
 
-## 10. Generation — Manipulations (Phase 3 Empirical Record)
+# Step 2: Generate 240 Manipulated Variants & metadata.csv (Phase 3)
+python -m src.dataset.manipulate --variants-per-original 4 --samples
 
-- **Total Images in Full Dataset**: **`300 images`** (60 Originals + 240 Manipulated Variants)
-- **Variants per Original**: Exactly **4 variants** generated per source original.
-- **Random Seed**: `42`
-- **Reproduction Command**:
-  ```bash
-  python -m src.dataset.manipulate --variants-per-original 4 --samples
-  ```
+# Step 3: Generate Leakage-Safe Splits & Manifests (Phase 4)
+python -m src.dataset.split --train 0.70 --val 0.15 --test 0.15 --seed 42
 
-### Label Distribution (Class Balance)
-| Class Label | Count | Proportion | Semantic Meaning |
-|:---|:---:|:---:|:---|
-| `original` | 60 | 20.0% | Clean untouched synthetic originals |
-| `original_transformed` | 46 | 15.3% | Benign transformations (resize, recompress) |
-| `synthetic_fake` | 194 | 64.7% | Malicious content manipulations |
-| **Total** | **300** | **100.0%** | Comprehensive forensic dataset |
-
-*Note on Class Balance*: In a standard binary classification setup, `original` + `original_transformed` comprise **106 images (35.3%)** vs. `synthetic_fake` **194 images (64.7%)**. This intentional ratio reflects real-world anomaly detection tasks where anomalies occur across diverse edit classes while preserving substantial benign baselines.
-
-### Edit Type Breakdown
-| Edit Type | Label Class | Count |
-|:---|:---|:---:|
-| `none` | `original` | 60 |
-| `amount_change` | `synthetic_fake` | 24 |
-| `date_change` | `synthetic_fake` | 29 |
-| `transaction_id_change` | `synthetic_fake` | 28 |
-| `text_insert` | `synthetic_fake` | 27 |
-| `text_remove` | `synthetic_fake` | 25 |
-| `font_alter` | `synthetic_fake` | 31 |
-| `crop` | `synthetic_fake` | 30 |
-| `resize` | `original_transformed` | 22 |
-| `recompress` | `original_transformed` | 24 |
-| **Total** | | **300** |
-
-### Template Family Breakdown
-- **Family 1 (`PayLite`)**: `100 images`
-- **Family 2 (`QuickPe`)**: `100 images`
-- **Family 3 (`UniPay`)**: `100 images`
+# Step 4: Run Full Dataset Integrity & Leakage Audit
+python -m src.dataset.audit
+```
 
 ---
 
-## 11. Academic & Legal Safety Statement
+## 12. Dataset Limitations & Academic Scope
 
-> **Ethical & Safety Notice**: This synthetic dataset is constructed solely for academic research in document tamper detection and automated forensic verification. All templates are completely non-branded, all account information and UTRs are generated from random seeds, and no real-world banking ledgers, customer records, or payment gateways are accessed. The generator is restricted to producing detector training data and is expressly not designed or intended to produce usable payment evidence.
+To ensure intellectual honesty and academic rigour:
+1. **Synthetic-Only Representation**: The dataset is entirely generated by Pillow drawing scripts. It does not contain camera optical distortions, screen glare, moiré patterns, or physical camera sensor noise.
+2. **Fictionalized Brand Stylings**: Templates are designed around fictional apps (`PayLite`, `QuickPe`, `UniPay`) to avoid trademark infringements. They approximate real UPI layout conventions but do not replicate proprietary third-party UIs.
+3. **Controlled Manipulation Types**: The 9 manipulation types represent systematic digital alterations. Real-world forgers may employ complex Photoshop layer masking or generative AI inpainting not fully captured here.
+4. **Scale & Generalization**: With 300 total images, this dataset serves as a benchmark for proof-of-concept IDP evaluation. Results demonstrate algorithmic feasibility but do not directly guarantee production performance on arbitrary wild screenshots.
+
+---
+
+## 13. Handoff Note for Person 3 (CNN Model Training)
+
+> **ATTENTION PERSON 3**:
+> - Manifests are available in `data/splits/train.csv`, `data/splits/val.csv`, and `data/splits/test.csv`.
+> - **Schema**: `image_id`, `source_id`, `template_family`, `label`, `edit_type`, `filename`, `relative_path`, `split`.
+> - Image paths are relative to `data/` directory (e.g. `data/raw/...` and `data/processed/...`).
+> - **Mandatory Verification**: Do not take this split on trust. Run `python -m src.dataset.audit` or independently verify group disjointness by checking `set(train_df['source_id']) & set(test_df['source_id']) == set()` in your PyTorch dataloader.

@@ -1,0 +1,40 @@
+======================================================================
+DATASET INTEGRITY & DATA LEAKAGE AUDIT REPORT — PERSON 2
+======================================================================
+Total Images Audited    : 300
+Train Split Manifest    : 210 images (42 unique sources, 70.0%)
+Val Split Manifest      : 45 images (9 unique sources, 15.0%)
+Test Split Manifest     : 45 images (9 unique sources, 15.0%)
+----------------------------------------------------------------------
+[VERIFICATION CHECKS BREAKDOWN]
+  [✓ PASS] 1. Group Disjointness (Zero Source Leakage)
+  [✓ PASS] 2. File Existence on Disk
+  [✓ PASS] 3. Zero Orphan Disk Files
+  [✓ PASS] 4. Zero Duplicate Image IDs
+  [✓ PASS] 5. Template Family Coverage across all splits
+  [✓ PASS] 6. Label Class Coverage across all splits
+  [✓ PASS] 7. Class Balance Consistency Reporting
+  [✓ PASS] 8. Cross-Split Perceptual Near-Duplicate Hash Check (256-bit dHash)
+  [✓ PASS] 9. Image Header & Pixel Decoding Check
+  [✓ PASS] 10. Dimension Outlier & Canvas Constraint Check
+  [✓ PASS] 11. Ground-Truth Answer Key Coverage
+----------------------------------------------------------------------
+[DETAILED SPLIT DISTRIBUTIONS]
+
+  • Template Family Distribution by Split:
+    Split    | Family 1   | Family 2   | Family 3   | Total 
+    ---------|------------|------------|------------|-------
+    TRAIN    |         70 |         70 |         70 |    210
+    VAL      |         15 |         15 |         15 |     45
+    TEST     |         15 |         15 |         15 |     45
+
+  • Label Class Distribution by Split:
+    Split    | Original   | Orig_Trans | Synth_Fake | Total 
+    ---------|------------|------------|------------|-------
+    TRAIN    |         42 |         30 |        138 |    210
+    VAL      |          9 |         13 |         23 |     45
+    TEST     |          9 |          3 |         33 |     45
+
+======================================================================
+🎉 OVERALL VERDICT: 100% AUDIT PASSED. DATASET IS LEAKAGE-FREE.
+======================================================================
