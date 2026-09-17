@@ -55,6 +55,23 @@ original and amount-edited PNGs had very similar mean differences (0.8172 and
 0.8241), while merely resizing the original produced 1.0708. See
 `docs/forensics.md` for limits and interpretation.
 
+### Phase 6: Grad-CAM Explainability
+
+- Verified that the trained ResNet-18 checkpoint loads and supports inference
+  before implementing Grad-CAM.
+- `generate_gradcam()` produces the model prediction, heatmap, and overlay.
+- It uses `resnet.layer4[-1].conv2`, the final convolutional layer before global
+  pooling and classification, so it retains the deepest spatial model features.
+- Generated outputs are in `results/gradcam/`; the implementation and limits are
+  documented in `docs/gradcam.md`.
+
+The available examples are `img_050` (correctly predicted modified, probability
+0.921886) and `img_049` (false-positive original, predicted modified at
+0.655425). No correctly classified original or false negative existed in the
+held-out evaluation, so no such examples are claimed. Grad-CAM highlights regions
+that contributed to the model output; it does not prove a highlighted region was
+manipulated, that fraud occurred, or that a transaction was fake.
+
 ## Integration API
 
 ```python
@@ -75,6 +92,7 @@ For direct forensic use:
 from PERSON_3_SANJAY.src.forensics.ela import analyze_ela
 from PERSON_3_SANJAY.src.forensics.metadata import inspect_metadata
 from PERSON_3_SANJAY.src.forensics.forensic_analysis import analyze_image
+from PERSON_3_SANJAY.src.explainability.gradcam import generate_gradcam
 ```
 
 ## Structure
@@ -85,12 +103,15 @@ PERSON_3_SANJAY/
 ├── models/               # Trained ResNet-18 checkpoints
 ├── results/
 │   ├── metrics/          # Held-out metrics, predictions, error analysis, matrix
-│   └── ela/              # Controlled ELA example outputs
+│   ├── ela/              # Controlled ELA example outputs
+│   └── gradcam/          # Grad-CAM originals, heatmaps, and overlays
 ├── scripts/
 │   ├── train_model.py
 │   ├── evaluate_test_set.py
-│   └── generate_ela_examples.py
+│   ├── generate_ela_examples.py
+│   └── generate_gradcam_examples.py
 ├── src/
+│   ├── explainability/   # Grad-CAM implementation
 │   ├── forensics/        # ELA, metadata, unified evidence wrapper
 │   ├── model/            # Dataset, preprocessing, model, training, evaluation
 │   └── api.py            # Integration entry points
@@ -105,6 +126,7 @@ From the repository root:
 .\.venv\Scripts\python.exe -m pytest PERSON_3_SANJAY\tests -v
 .\.venv\Scripts\python.exe PERSON_3_SANJAY\scripts\evaluate_test_set.py
 .\.venv\Scripts\python.exe PERSON_3_SANJAY\scripts\generate_ela_examples.py
+.\.venv\Scripts\python.exe PERSON_3_SANJAY\scripts\generate_gradcam_examples.py
 ```
 
-The current test suite contains 19 passing tests.
+The current test suite contains 21 passing tests.
