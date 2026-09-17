@@ -52,28 +52,28 @@ To prevent the OCR and CNN pipelines from overfitting to a single rigid visual s
 
 | Design Dimension | Family 1: `PayLite` | Family 2: `QuickPe` | Family 3: `UniPay` |
 |:---|:---|:---|:---|
-| **Visual Theme** | Flat Header Banner (Primary Tint) | Elevated Central Card Container | Clean Minimalist Two-Tone Grid |
-| **Hero Amount Placement** | Large centered hero typography (y ≈ 260px) | Inside top card container (y ≈ 240px) | Left-aligned bold sub-header (y ≈ 200px) |
-| **Date / Time Formatting** | Textual month (`12 Mar 2026, 10:15 AM`) | Compact inline (`12-03-2026 | 10:15 AM`) | ISO format (`2026-03-12 10:15 AM`) |
-| **UTR / Reference Label** | `UPI Ref No.` / `UTR` | `Transaction Reference ID` | `Bank Ref (UTR)` |
-| **Status Indicator** | Central circle with success tick icon | Pill badge: `[✓ PAYMENT COMPLETED]` | Top-right label: `STATUS: SUCCESS` |
+| **Visual Theme** | Flat Header Banner (Primary Blue `#1A73E8`) | Elevated Floating Card (`#1E2738` on `#121824`) | Clean Minimalist Two-Tone Grid (`#FAFAFA`) |
+| **Hero Amount Placement** | Large centered hero typography ($y \approx 215\text{px}$) | Inside top elevated card ($y \approx 170\text{px}$) | Left-aligned bold sub-header ($y \approx 105\text{px}$) |
+| **Date / Time Formatting** | Textual month (`12 Mar 2026, 10:15 AM`) | Compact inline (`12-03-2026, 10:15 AM`) | ISO format (`2026-03-12, 10:15`) |
+| **UTR / Reference Label** | `UPI Ref (UTR)` | `Reference ID (UTR)` | `Bank Ref (UTR)` |
+| **Status Indicator** | Central circle with success tick icon | Top-right pill badge: `[✓ COMPLETED]` | Top-right rectangular badge: `[ SUCCESS ]` |
 
 ---
 
 ## 4. Standard Field Definitions & Coordinate Anchors
 
-Every synthetic receipt guarantees the presence of eight core fields rendered at fixed or structurally bounded relative coordinates:
+Every synthetic receipt guarantees the presence of eight core fields rendered at structurally bounded coordinates:
 
 | Field Name | Description | Datatype | Example |
 |:---|:---|:---:|:---|
-| `app_template` | Fictional application brand | `str` | `PayLite`, `QuickPe`, `UniPay` |
-| `status` | Confirmation status keyword | `str` | `Paid Successfully`, `Payment Completed` |
-| `amount` | Monetary value with currency indicator | `str` / `float` | `₹450.00`, `₹1,250.00` |
-| `recipient` | Payee business / contact name | `str` | `Metro Book Store`, `Apex Cafe` |
-| `payer` | Sender account description | `str` | `Synthetic Student Account` |
-| `date` | Transaction execution date | `str` | `12 Mar 2026`, `2026-03-12` |
-| `time` | Transaction timestamp (12h or 24h) | `str` | `10:15 AM`, `14:30:00` |
-| `transaction_id` | 12-digit standard UPI reference number | `str` | `425631219101` |
+| `app_name` | Fictional application brand | `str` | `PayLite`, `QuickPe`, `UniPay` |
+| `status` | Confirmation status keyword | `str` | `Paid Successfully`, `Payment Completed`, `SUCCESS` |
+| `amount` | Monetary value with currency indicator | `str` / `float` | `₹450.00`, `₹1,250.50`, `₹29,873.87` |
+| `payee` | Recipient business / contact name | `str` | `Metro Book Store`, `Apex Mart`, `Sunrise Cafe` |
+| `payer` | Sender account description | `str` | `Synthetic Student Account`, `Demo Academic User` |
+| `date` | Transaction execution date | `str` | `12 Mar 2026`, `12-03-2026`, `2026-03-12` |
+| `time` | Transaction timestamp (12h or 24h) | `str` | `10:15 AM`, `02:45 PM`, `14:30` |
+| `transaction_id` | 12-digit standard UPI reference number | `str` | `425631219101`, `637940265423` |
 
 ---
 
@@ -83,16 +83,14 @@ Every generated asset is tracked with dual labeling:
 
 1. **Binary Class Label (`label`)**:
    - `original`: An untampered, cleanly synthesized receipt image.
-   - `synthetic_fake`: A receipt exhibiting one or more controlled programmatic manipulations.
+   - `synthetic_fake`: A receipt exhibiting one or more controlled programmatic manipulations (Phase 3).
 
 2. **Fine-Grained Manipulation Label (`edit_type`)**:
-   - Explicitly records which transformation was applied (see Section 6).
+   - Explicitly records which transformation was applied (`none` for originals).
 
 ---
 
 ## 6. Planned Manipulation Categories (10 Edit Types)
-
-To provide diverse forensic anomalies for both OCR/rules (semantic/logical anomalies) and CNN/ELA (pixel/compression anomalies), we plan 10 distinct edit types:
 
 | # | `edit_type` | Description & Forensic Impact |
 |:---:|:---|:---|
@@ -111,18 +109,16 @@ To provide diverse forensic anomalies for both OCR/rules (semantic/logical anoma
 
 ## 7. Systematic Naming Convention & Leakage Prevention
 
-To ensure group-aware dataset partitioning (avoiding identical layout variants leaking across train and test splits):
-
 $$\text{Image ID} = \texttt{tpl\{Family\}\_src\{SourceID\}\_\{EditType\}\_\{VariantID\}}$$
 
 - `tpl{F}`: Template family index (`1` = PayLite, `2` = QuickPe, `3` = UniPay).
 - `src{NNN}`: Master source generation index (`001` to `100`).
-- `{EditType}`: Manipulation tag (e.g. `none`, `amount_change`, `recompress`).
-- `{VariantID}`: Replication variation counter (`01`, `02`).
+- `{EditType}`: Manipulation tag (`none` for originals).
+- `{VariantID}`: Replication variation counter (`01`).
 
-**Example Filename**: `tpl1_src042_amount_change_01.png`
+**Example Filename**: `tpl1_src001_none_01.png`
 
-**Split Strategy**: When partitioning data into `train`, `val`, and `test` manifests, splits are grouped strictly by `src{NNN}`. All derivative edits of source `src042` reside strictly within one partition.
+**Split Strategy**: When partitioning data into `train`, `val`, and `test` manifests in Phase 4, splits are grouped strictly by `src{NNN}`, preventing identical visual structures from leaking across splits.
 
 ---
 
@@ -134,24 +130,33 @@ Every generated image is programmatically watermarked at the canvas footer ($y \
 DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY
 ```
 
-- **Coordinates**: Horizontally centered, 10–12pt sans-serif font, neutral gray (`#888888`).
+- **Coordinates**: Horizontally centered, 10–12pt sans-serif font, neutral gray.
 - **Non-Interference**: Positioned at least 40px below the lowest transaction detail line to guarantee that OCR bounding boxes for transaction fields remain completely unoccluded.
 
 ---
 
-## 9. Academic & Legal Safety Statement
+## 9. Generation — Originals (Phase 2 Empirical Record)
 
-> **Ethical & Safety Notice**: This synthetic dataset is constructed solely for academic research in document tamper detection and automated forensic verification. All templates are completely non-branded, all account information and UTRs are generated from random seeds, and no real-world banking ledgers, customer records, or payment gateways are accessed. The generator is restricted to producing detector training data and is expressly not designed or intended to produce usable payment evidence.
+The Phase 2 Template Synthesis Engine has been executed to generate the unmanipulated baseline dataset:
+
+- **Total Originals Generated**: `60 images`
+- **Family 1 (`PayLite`)**: `20 images` (`tpl1_src001_none_01.png` to `tpl1_src020_none_01.png`)
+- **Family 2 (`QuickPe`)**: `20 images` (`tpl2_src021_none_01.png` to `tpl2_src040_none_01.png`)
+- **Family 3 (`UniPay`)**: `20 images` (`tpl3_src041_none_01.png` to `tpl3_src060_none_01.png`)
+- **Random Seed**: `42` (ensures 100% byte-identical reproducibility)
+- **Reference Date Boundary**: `2026-03-15` (all generated transaction dates fall strictly in the past)
+- **Reproduction Command**:
+  ```bash
+  python -m src.dataset.templates --count 60 --samples
+  ```
+- **Ground-Truth File**: [`data/ground_truth.csv`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/data/ground_truth.csv) (60 ground-truth answer key rows with exact amount, date, time, and 12-digit UTR values).
+- **Committed Sample Images**:
+  - `docs/samples/sample_family1_paylite.png`
+  - `docs/samples/sample_family2_quickpe.png`
+  - `docs/samples/sample_family3_unipay.png`
 
 ---
 
-## 10. Planned Dataset Scale (Phase 3 Target)
+## 10. Academic & Legal Safety Statement
 
-| Split | Proportion | Planned Original Images | Planned Manipulated Images | Planned Total Images |
-|:---|:---:|:---:|:---:|:---:|
-| **Train** | 60% | 180 | 540 | 720 |
-| **Validation** | 20% | 60 | 180 | 240 |
-| **Test (Held-Out)** | 20% | 60 | 180 | 240 |
-| **Total Target** | **100%** | **300** | **900** | **1,200** |
-
-*(Note: Target counts will be updated with exact measured figures upon completion of Phase 3 generation).*
+> **Ethical & Safety Notice**: This synthetic dataset is constructed solely for academic research in document tamper detection and automated forensic verification. All templates are completely non-branded, all account information and UTRs are generated from random seeds, and no real-world banking ledgers, customer records, or payment gateways are accessed. The generator is restricted to producing detector training data and is expressly not designed or intended to produce usable payment evidence.

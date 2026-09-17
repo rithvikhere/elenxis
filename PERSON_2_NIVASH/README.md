@@ -4,61 +4,47 @@
 
 ---
 
-## 📌 Phase 1 Completed: Foundation, Scaffolding & Template Design Specification
+## 📌 Subsystem Overview & Phase Progress
 
-In **Phase 1 of 8**, the foundational architecture, central path manager, configuration system, and comprehensive template design specifications were implemented for Person 2's subsystem.
+Person 2 is responsible for the foundational data generation, optical character recognition (OCR), and heuristic rule-based consistency validation modules.
 
-### What Was Done in Phase 1:
+### Phase Progress Dashboard
 
-1. **Self-Contained Scaffolding & Directory Layout**:
-   - Structured the repository according to the master plan with clear module boundaries (`src/dataset/`, `src/ocr/`, `src/rules/`, `src/utils/`, `data/splits/`, `docs/`, `tests/`).
-   - Every package contains appropriate `__init__.py` interface exports.
-
-2. **Central Path Resolution (`src/utils/paths.py`)**:
-   - Zero hard-coded absolute paths or fragile relative path concatenations (`../../`).
-   - Exposes dynamic path constants (`PROJECT_ROOT`, `DATA_DIR`, `RAW_DIR`, `PROCESSED_DIR`, `SPLITS_DIR`, `METADATA_CSV`, `DOCS_DIR`, `TESTS_DIR`, `SRC_DIR`).
-   - Includes automatic directory provisioning utility `ensure_dir(path)`.
-
-3. **Central Dataset Configuration (`src/dataset/config.py`)**:
-   - Fixed reproducibility seed (`RANDOM_SEED = 42`).
-   - Mobile canvas dimensions (`IMAGE_SIZE = (400, 800)`).
-   - Fictional, non-branded template identities (`PayLite`, `QuickPe`, `UniPay`) acting as stand-ins for 3 layout families without trademark infringement.
-   - 10 planned manipulation categories (`none`, `amount_change`, `date_change`, `transaction_id_change`, `text_insert`, `text_remove`, `font_alter`, `crop`, `resize`, `recompress`).
-   - Standard 12-digit UPI reference ID regex constraints and mandatory academic watermark constant.
-
-4. **Complete Template Design Specification (`docs/dataset.md`)**:
-   - Comprehensive 10-point architectural specification authored before writing code.
-   - Detailed structural comparison of the 3 template families (field order, visual hierarchy, status banners, card containers, date formats).
-   - Standardized coordinate anchors and field datatypes for all 8 mandatory fields.
-   - Dual-labeling scheme (`original` vs `synthetic_fake` + `edit_type`).
-   - Source-grouped naming convention (`tpl{F}_src{NNN}_{edit}_{VV}`) to strictly prevent data leakage across train/val/test splits.
-   - Ethical and academic safety statement.
-
-5. **Dependency Management (`requirements.txt`)**:
-   - Clean, pinned dependencies with 1-line rationale comments (`pillow`, `opencv-python`, `numpy`, `pandas`, `pytest`, `python-dateutil`).
-
-6. **Documentation Stubs & Verification**:
-   - `docs/ocr.md` and `docs/rules.md` stubs pointing to upcoming phases.
-   - Unit test suite in `tests/test_paths_config.py` (4/4 passing tests).
+| Phase | Title | Status | Documentation |
+|:---:|:---|:---:|:---|
+| **Phase 1** | Foundation, Scaffolding & Template Design Spec | **Completed (100%)** | [`PHASE_1_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_1_README.md) |
+| **Phase 2** | Template Synthesis Engine — Generating the Originals | **Completed (100%)** | [`PHASE_2_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_2_README.md) |
+| **Phase 3** | Manipulation Engine & Ground-Truth Metadata Creation | *Pending* | `PHASE_3_README.md` |
+| **Phase 4** | Leakage-Free Dataset Splitting & Verification | *Pending* | `PHASE_4_README.md` |
+| **Phase 5** | Image Preprocessing & OCR Engine Selection | *Pending* | `PHASE_5_README.md` |
+| **Phase 6** | Field Extraction & Parser Heuristics | *Pending* | `PHASE_6_README.md` |
+| **Phase 7** | Rule-Based Validation Engine & Anomaly Formulation | *Pending* | `PHASE_7_README.md` |
+| **Phase 8** | Empirical Benchmarking & Review Deliverables | *Pending* | `PHASE_8_README.md` |
 
 ---
 
-## 📂 Phase 1 Directory Structure
+## 📂 Subsystem Directory Structure
 
 ```
 PERSON_2_NIVASH/
 ├── data/
-│   ├── raw/                  # Storage for generated original templates
-│   ├── processed/            # Storage for manipulated variants
-│   └── splits/               # Train, validation, and test split manifests
+│   ├── raw/                  # 60 synthesized original receipt images
+│   ├── processed/            # Manipulated variants (Phase 3)
+│   ├── splits/               # Train, validation, and test split manifests (Phase 4)
+│   └── ground_truth.csv      # 60 reference ground-truth records (Phase 2)
 ├── docs/
 │   ├── dataset.md            # Complete 10-point Template Design Specification
 │   ├── ocr.md                # Stub for Phases 5–6 (OCR Pipeline)
-│   └── rules.md              # Stub for Phase 7 (Rule-Based Validation Engine)
+│   ├── rules.md              # Stub for Phase 7 (Rule-Based Validation Engine)
+│   └── samples/              # Committed sample receipts (1 per layout family)
+│       ├── sample_family1_paylite.png
+│       ├── sample_family2_quickpe.png
+│       └── sample_family3_unipay.png
 ├── src/
 │   ├── dataset/
-│   │   ├── __init__.py       # Dataset package exports
-│   │   └── config.py         # Central dataset constants & manipulation parameters
+│   │   ├── __init__.py       # Package exports (templates, generators)
+│   │   ├── config.py         # Central dataset constants & manipulation parameters
+│   │   └── templates.py      # Template synthesis engine for 3 layout families
 │   ├── ocr/
 │   │   └── __init__.py       # Stub for OCR package
 │   ├── rules/
@@ -68,28 +54,28 @@ PERSON_2_NIVASH/
 │       └── paths.py          # Central path resolver & directory manager
 ├── tests/
 │   ├── __init__.py           # Tests package initialization
-│   └── test_paths_config.py  # Automated tests for paths & config constants
+│   ├── test_paths_config.py  # Path & configuration unit tests (Phase 1)
+│   └── test_templates.py     # Template generator & renderer unit tests (Phase 2)
 ├── requirements.txt          # Pinned Person 2 dependencies with rationale
-└── README.md                 # This Phase 1 Overview & Quickstart Guide
+├── PHASE_1_README.md         # Phase 1 Summary & Documentation
+├── PHASE_2_README.md         # Phase 2 Summary & Documentation
+└── README.md                 # This Person 2 Overview & Phase Progress Dashboard
 ```
 
 ---
 
-## 🚀 Verification & Quickstart
-
-To verify the Phase 1 setup locally:
+## 🚀 Execution & Quickstart
 
 ```bash
 # 1. Activate virtual environment
 source .venv/bin/activate
 
-# 2. Run Phase 1 automated tests
+# 2. Run Person 2 unit tests (9/9 passing)
 cd PERSON_2_NIVASH
-pytest tests/test_paths_config.py -v
+pytest tests/ -v
 
-# 3. Test path and configuration imports
-python -c "from src.utils.paths import PROJECT_ROOT; print('Root:', PROJECT_ROOT)"
-python -c "from src.dataset import config; print('Templates:', config.TEMPLATE_NAMES)"
+# 3. Regenerate synthetic original receipts (Seed: 42)
+python -m src.dataset.templates --count 60 --samples
 ```
 
 ---
