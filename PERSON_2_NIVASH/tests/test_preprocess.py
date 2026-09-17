@@ -1,22 +1,20 @@
 """
-Unit Tests: Image Preprocessing Module.
+Unit Tests: Image Preprocessing Module (Phase 5).
 Person 2 (Nivash) — UPI Transaction Fraud Forensics Platform (IDP).
 """
 
-import sys
 from pathlib import Path
 import pytest
 from PIL import Image
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.ocr.preprocess import (
     load_image, preprocess_image,
     to_grayscale, enhance_contrast,
     apply_threshold, apply_otsu_threshold, denoise_median,
 )
+from src.utils.paths import RAW_DIR
 
-SAMPLE_IMG = Path(__file__).parent.parent / "data" / "raw" / "img_001.png"
+SAMPLE_IMG = RAW_DIR / "tpl1_src001_none_01.png"
 
 
 class TestLoadImage:
@@ -64,7 +62,10 @@ class TestPreprocessingMethods:
     def test_apply_threshold(self):
         out = apply_threshold(self.img, threshold=160)
         assert out.mode == "L"
-        pixels = set(out.getdata())
+        try:
+            pixels = set(out.get_flattened_data())
+        except AttributeError:
+            pixels = set(out.getdata())
         assert pixels.issubset({0, 255})
 
     def test_apply_otsu_threshold(self):

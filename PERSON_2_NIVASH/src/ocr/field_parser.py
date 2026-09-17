@@ -173,12 +173,19 @@ def parse_utr(text: str) -> Optional[str]:
 
 def parse_template_type(text: str) -> str:
     tl = text.lower()
+    if "paylite" in tl:
+        return "PayLite"
+    if "quickpe" in tl or "uclpe" in tl or "ucipe" in tl or "quick pe" in tl:
+        return "QuickPe"
+    if "unipay" in tl or "uni pay" in tl:
+        return "UniPay"
+    # Legacy aliases
     if "apexpay" in tl:
-        return "ApexPay"
+        return "PayLite"
     if "zenithupi" in tl or "zenith" in tl:
-        return "ZenithUPI"
+        return "QuickPe"
     if "novapay" in tl:
-        return "NovaPay"
+        return "UniPay"
     return "GenericUPI"
 
 
@@ -187,9 +194,11 @@ def parse_template_type(text: str) -> str:
 # ---------------------------------------------------------------------------
 
 _KNOWN_RECIPIENTS = [
-    "Metro Book Store", "Sunrise Cafe", "Blue Star Electronics",
+    "Metro Book Store", "Sunrise Cafe", "Apex Mart", "Green Grocers",
+    "Urban Coffee", "City Pharmacy", "Modern Bakery", "Quick Mart",
+    "Tech Zone", "Campus Canteen", "Blue Star Electronics",
     "Green Grocers Mart", "Apex Stationery", "Urban Coffee Roasters",
-    "City Pharmacy Retail", "Modern Bakery Store",
+    "City Pharmacy Retail", "Modern Bakery Store", "City Electronics",
 ]
 
 
@@ -200,13 +209,15 @@ def parse_recipient(text: str) -> Optional[str]:
             return rec
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     for i, line in enumerate(lines):
-        for prefix in ("to recipient", "transfer to", "recipient name"):
+        for prefix in ("paid to", "paid to:", "to recipient", "transfer to", "recipient name", "recipient"):
             if prefix in line.lower():
-                cleaned = re.sub(re.escape(prefix), '', line, flags=re.IGNORECASE).strip(": \t-")
-                if cleaned:
+                cleaned = re.sub(re.escape(prefix), '', line, flags=re.IGNORECASE).strip(": \t-—")
+                if cleaned and len(cleaned) > 2:
                     return cleaned
                 if i + 1 < len(lines):
-                    return lines[i + 1]
+                    next_line = lines[i + 1].strip()
+                    if next_line and not any(k in next_line.lower() for k in ("amount", "paid from", "ref", "date", "status")):
+                        return next_line
     return None
 
 
@@ -218,12 +229,12 @@ def parse_transaction_status(text: str) -> str:
     tl = text.lower()
     if "paid successfully" in tl or "pald successfully" in tl:
         return "Paid Successfully"
+    if "payment completed" in tl or "completed" in tl:
+        return "Payment Completed"
     if "transaction successful" in tl:
         return "Transaction Successful"
     if "payment confirmed" in tl:
         return "Payment Confirmed"
-    if "completed" in tl:
-        return "COMPLETED"
     if "success" in tl:
         return "SUCCESS"
     return "Unknown"

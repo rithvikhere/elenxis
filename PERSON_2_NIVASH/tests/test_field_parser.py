@@ -104,14 +104,14 @@ class TestParseUtr:
 
 
 class TestParseTemplateType:
-    def test_apex(self):
-        assert parse_template_type("ApexPay UPI") == "ApexPay"
+    def test_paylite(self):
+        assert parse_template_type("PayLite UPI") == "PayLite"
 
-    def test_zenith(self):
-        assert parse_template_type("ZenithUPI Instant Transfer") == "ZenithUPI"
+    def test_quickpe(self):
+        assert parse_template_type("QuickPe Instant Transfer") == "QuickPe"
 
-    def test_nova(self):
-        assert parse_template_type("NovaPay Transfer") == "NovaPay"
+    def test_unipay(self):
+        assert parse_template_type("UniPay Transfer") == "UniPay"
 
     def test_generic_fallback(self):
         assert parse_template_type("Unknown App") == "GenericUPI"

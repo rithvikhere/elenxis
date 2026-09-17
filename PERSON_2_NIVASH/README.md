@@ -16,7 +16,7 @@ Person 2 is responsible for the foundational data generation, leakage-safe datas
 | **Phase 2** | Template Synthesis Engine — Generating the Originals | **Completed (100%)** | [`PHASE_2_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_2_README.md) |
 | **Phase 3** | Controlled Manipulation Engine & Labeled Metadata | **Completed (100%)** | [`PHASE_3_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_3_README.md) |
 | **Phase 4** | Leakage-Safe Splitting, Integrity Audit & Dataset Docs | **Completed (100%)** | [`PHASE_4_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_4_README.md) |
-| **Phase 5** | Image Preprocessing & OCR Engine Selection | *Pending* | `PHASE_5_README.md` |
+| **Phase 5** | Image Preprocessing & OCR Engine Selection | **Completed (100%)** | [`PHASE_5_README.md`](file:///Users/nivash/elenxis/PERSON_2_NIVASH/PHASE_5_README.md) |
 | **Phase 6** | Field Extraction & Parser Heuristics | *Pending* | `PHASE_6_README.md` |
 | **Phase 7** | Rule-Based Validation Engine & Anomaly Formulation | *Pending* | `PHASE_7_README.md` |
 | **Phase 8** | Empirical Benchmarking & Review Deliverables | *Pending* | `PHASE_8_README.md` |
