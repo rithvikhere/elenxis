@@ -470,9 +470,13 @@ def main() -> None:
     print("=" * 60)
     print(f"Generating {args.count} original receipts (Seed: {args.seed})...")
 
+    out_path = Path(args.out)
+    gt_path = (out_path / "ground_truth.csv") if out_path != RAW_DIR else (DATA_DIR / "ground_truth.csv")
+
     summary = generate_originals(
         count=args.count,
-        output_dir=Path(args.out),
+        output_dir=out_path,
+        ground_truth_path=gt_path,
         seed=args.seed,
     )
 
