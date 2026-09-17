@@ -1,5 +1,6 @@
-# Virtual Environment
+# Python Virtual Environment
 .venv/
+env/
 venv/
 ENV/
 
@@ -34,3 +35,4 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
