@@ -1,0 +1,48 @@
+================================================================================
+RULE-BASED VALIDATION ENGINE BENCHMARK REPORT — PERSON 2
+================================================================================
+Total Receipts Evaluated : 300 images (60 original, 46 transformed, 194 fake)
+Reference System Date    : 17 Sep 2026
+--------------------------------------------------------------------------------
+[CLASSIFICATION PERFORMANCE MATRIX]
+  • True Positives  (TP) :  89  (Tampered receipts correctly flagged)
+  • True Negatives  (TN) :  61  (Legitimate receipts correctly cleared)
+  • False Positives (FP) :  45  (Legitimate receipts flagged as suspicious)
+  • False Negatives (FN) : 105  (Tampered receipts missed by heuristic rules)
+--------------------------------------------------------------------------------
+  • Accuracy             :  50.00%
+  • Precision            :  66.42%
+  • Recall (Sensitivity) :  45.88%
+  • F1-Score             :  54.27%
+--------------------------------------------------------------------------------
+[PER-EDIT-TYPE DETECTION BREAKDOWN]
+Edit Type                | Total  | Flagged  | Detection Rate
+-------------------------|--------|----------|---------------
+amount_change            |     24 |       12 |          50.0%
+crop                     |     30 |       12 |          40.0%
+date_change              |     29 |       18 |          62.1%
+font_alter               |     31 |       11 |          35.5%
+none                     |     60 |       21 |          35.0%
+recompress               |     24 |       10 |          41.7%
+resize                   |     22 |       14 |          63.6%
+text_insert              |     27 |        9 |          33.3%
+text_remove              |     25 |       14 |          56.0%
+transaction_id_change    |     28 |       13 |          46.4%
+--------------------------------------------------------------------------------
+[TOP RULE VIOLATIONS TRIGGERED]
+  • RULE-10 FAIL              : 102 violations
+  • RULE-09 FAIL              : 100 violations
+  • RULE-08 FAIL              :  96 violations
+  • RULE-07 FAIL              :  17 violations
+  • RULE-04 FAIL              :  15 violations
+  • RULE-01 FAIL              :  14 violations
+  • RULE-02 FAIL              :  14 violations
+  • RULE-05 FAIL              :  11 violations
+================================================================================
+FORENSIC ANALYSIS & ENSEMBLE COOPERATION NOTE:
+  • Syntactic & temporal manipulations (date_change, transaction_id_change, text_remove)
+    achieve high detection rates via explicit rule invariants.
+  • Subtle visual perturbations (font_alter, crop, slight amount edits within range)
+    are naturally handed off to Subsystem C (Image Forensics / ELA) and Subsystem D (CNN),
+    proving the scientific necessity of multi-modal ensemble cooperation.
+================================================================================

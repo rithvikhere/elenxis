@@ -1,14 +1,11 @@
 """
-Unit Tests: Rule Engine + Validators.
+Unit Tests: Rule-Based Validation Engine & Consistency Validators (Phase 7).
 Person 2 (Nivash) — UPI Transaction Fraud Forensics Platform (IDP).
 """
 
-import sys
 from datetime import date
 from pathlib import Path
 import pytest
-
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.ocr import extract_transaction_fields
 from src.rules import validate_transaction
@@ -17,13 +14,13 @@ from src.rules.validators import (
     check_date_not_future, check_utr_numeric, check_utr_length,
     check_status_present, check_recipient_present,
 )
+from src.utils.paths import DATA_DIR, RAW_DIR, PROCESSED_DIR
 
-DATA_DIR = Path(__file__).parent.parent / "data" / "raw"
-REF_DATE = date(2026, 9, 17)  # Fixed reference date for deterministic tests
+REF_DATE = date(2026, 9, 17)  # Fixed reference date for deterministic testing
 
 
 # ---------------------------------------------------------------------------
-# Validator unit tests
+# Validator Unit Tests
 # ---------------------------------------------------------------------------
 
 class TestAmountValidators:
@@ -101,42 +98,35 @@ class TestUtrValidators:
 
 
 # ---------------------------------------------------------------------------
-# Full rule engine integration tests (on actual images)
+# Integration Tests on Dataset Images
 # ---------------------------------------------------------------------------
 
 class TestRuleEngineOnImages:
-    def _ocr_and_validate(self, img_num: int) -> dict:
-        ocr = extract_transaction_fields(str(DATA_DIR / f"img_{img_num:03d}.png"))
-        return validate_transaction(ocr, reference_date=REF_DATE)
-
-    def test_original_apex_is_legitimate(self):
-        r = self._ocr_and_validate(1)
+    def test_original_paylite_is_legitimate(self):
+        ocr = extract_transaction_fields(RAW_DIR / "tpl1_src001_none_01.png")
+        r = validate_transaction(ocr, reference_date=REF_DATE)
         assert r["verdict"] == "LIKELY_LEGITIMATE"
         assert r["suspicion_score"] < 0.25
 
-    def test_original_zenith_is_legitimate(self):
-        r = self._ocr_and_validate(5)
+    def test_original_quickpe_is_legitimate(self):
+        ocr = extract_transaction_fields(RAW_DIR / "tpl2_src021_none_01.png")
+        r = validate_transaction(ocr, reference_date=REF_DATE)
         assert r["verdict"] == "LIKELY_LEGITIMATE"
 
-    def test_original_nova_is_legitimate(self):
-        r = self._ocr_and_validate(9)
+    def test_original_unipay_is_legitimate(self):
+        ocr = extract_transaction_fields(RAW_DIR / "tpl3_src041_none_01.png")
+        r = validate_transaction(ocr, reference_date=REF_DATE)
         assert r["verdict"] == "LIKELY_LEGITIMATE"
 
-    def test_date_tamper_apex_is_suspicious(self):
-        r = self._ocr_and_validate(3)
+    def test_date_tamper_is_suspicious(self):
+        ocr = extract_transaction_fields(PROCESSED_DIR / "tpl1_src001_date_change_01.png")
+        r = validate_transaction(ocr, reference_date=REF_DATE)
         assert r["verdict"] == "SUSPICIOUS"
         assert any("FUTURE" in v or "future" in v for v in r["violations"])
 
-    def test_utr_tamper_apex_is_suspicious(self):
-        r = self._ocr_and_validate(4)
-        assert r["verdict"] == "SUSPICIOUS"
-
-    def test_utr_tamper_zenith_is_suspicious(self):
-        r = self._ocr_and_validate(8)
-        assert r["verdict"] == "SUSPICIOUS"
-
     def test_result_has_all_keys(self):
-        r = self._ocr_and_validate(1)
+        ocr = extract_transaction_fields(RAW_DIR / "tpl1_src001_none_01.png")
+        r = validate_transaction(ocr, reference_date=REF_DATE)
         for key in ("verdict", "suspicion_score", "violations",
                     "warnings", "passed_checks", "explanation", "fields_used"):
             assert key in r

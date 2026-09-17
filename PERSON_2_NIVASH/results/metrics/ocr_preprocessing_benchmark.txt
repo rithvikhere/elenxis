@@ -6,12 +6,12 @@ OCR Engine          : Tesseract OCR (v5.x Engine, PSM 3 Automatic Segmentation)
 -------------------------------------------------------------------------------------
 Preprocessing  | Amount Acc | Date Acc   | UTR Acc    | Overall Field | Confidence | Latency   
 ---------------|------------|------------|------------|---------------|------------|-----------
-RAW            |      91.7% |      63.3% |      65.0% |         73.3% |      87.0% |   210.2 ms
-GRAYSCALE      |      91.7% |      65.0% |      63.3% |         73.3% |      86.1% |   198.2 ms
-CONTRAST       |      86.7% |      65.0% |      68.3% |         73.3% |      86.5% |   202.1 ms
-OTSU           |      65.0% |      51.7% |      61.7% |         59.4% |      74.3% |   205.5 ms
-THRESHOLD      |      58.3% |      43.3% |      40.0% |         47.2% |      71.8% |   169.3 ms
-DENOISE        |      66.7% |       8.3% |       6.7% |         27.2% |      53.4% |   153.4 ms
+RAW            |      91.7% |      63.3% |      65.0% |         73.3% |      87.0% |   208.3 ms
+GRAYSCALE      |      91.7% |      65.0% |      63.3% |         73.3% |      86.1% |   197.1 ms
+CONTRAST       |      86.7% |      65.0% |      68.3% |         73.3% |      86.5% |   200.0 ms
+OTSU           |      65.0% |      51.7% |      61.7% |         59.4% |      74.3% |   204.7 ms
+THRESHOLD      |      58.3% |      43.3% |      40.0% |         47.2% |      71.8% |   166.5 ms
+DENOISE        |      66.7% |       8.3% |       6.7% |         27.2% |      53.4% |   152.0 ms
 =====================================================================================
 CONCLUSION & EMPIRICAL JUSTIFICATION:
   • 'contrast' (Grayscale + 2.0x Dynamic Contrast Enhancement) achieves optimal field accuracy
