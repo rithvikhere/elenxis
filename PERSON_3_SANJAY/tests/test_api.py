@@ -18,5 +18,7 @@ def test_api_surface():
     assert "signals" in forensics_res
     
     cnn_res = predict(img)
-    assert cnn_res["available"] is False  # Safe 30% baseline state
+    assert cnn_res["available"] is True
+    assert cnn_res["label"] in ("original", "modified")
+    assert "probability" in cnn_res
     assert "reasons" in cnn_res

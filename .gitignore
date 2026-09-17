@@ -32,6 +32,12 @@ wheels/
 htmlcov/
 .ipynb_checkpoints
 
+# Large binary model checkpoints
+*.pt
+*.pth
+*.ckpt
+*.h5
+
 # OS files
 .DS_Store
 Thumbs.db

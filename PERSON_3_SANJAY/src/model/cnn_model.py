@@ -155,12 +155,17 @@ def predict(
             device = get_device()
 
         if model is None:
-            model = UPIForensicsCNN(backbone="resnet18", num_classes=2, pretrained=False)
             checkpoint = torch.load(weights_path, map_location=device)
-            if isinstance(checkpoint, dict) and "state_dict" in checkpoint:
-                model.load_state_dict(checkpoint["state_dict"])
+            state_dict = checkpoint["state_dict"] if isinstance(checkpoint, dict) and "state_dict" in checkpoint else checkpoint
+            arch = checkpoint.get("architecture", "") if isinstance(checkpoint, dict) else ""
+            
+            if arch == "resnet18_transfer_learning" or any(k.startswith("resnet.") for k in state_dict.keys()):
+                from .model import create_resnet18_model
+                model = create_resnet18_model(pretrained=False, num_classes=2)
             else:
-                model.load_state_dict(checkpoint)
+                model = UPIForensicsCNN(backbone="resnet18", num_classes=2, pretrained=False)
+                
+            model.load_state_dict(state_dict)
         
         model.to(device)
         model.eval()
