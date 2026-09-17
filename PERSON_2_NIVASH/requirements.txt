@@ -1,11 +1,18 @@
-iniconfig==2.3.0
-numpy==2.5.3
-packaging==26.3
-pandas==3.0.5
+# Person 2 Dependencies — Dataset Generation, Preprocessing & Testing
+# Pillow: Image synthesis, canvas rendering, visual transformations, and watermarking
 pillow==12.3.0
-pluggy==1.6.0
-Pygments==2.21.0
-pytesseract==0.3.13
+
+# OpenCV: Computer vision transformations, thresholding, and morphological operations
+opencv-python==4.11.0.86
+
+# NumPy: Array processing, matrix math, coordinate grids, and synthetic noise generation
+numpy==2.5.3
+
+# Pandas: Ground-truth metadata CSV creation, dataset manifests, and split management
+pandas==3.0.5
+
+# Pytest: Deterministic unit test suite for dataset generation, paths, and configurations
 pytest==9.1.1
+
+# Python-DateUtil: Date arithmetic and temporal parsing for receipt transaction timestamps
 python-dateutil==2.9.0.post0
-six==1.17.0
