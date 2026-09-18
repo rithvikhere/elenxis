@@ -20,6 +20,7 @@ Person 1 owns the end-to-end frontend user interface, multi-modal integration pi
 | **Phase 4** | Person 2 Module Integration (OCR + Rule Engine) | **Completed (100%)** | Replaced placeholder button with live calls to `extract_transaction_fields` and `validate_transaction`. Rendered structured "OCR Extracted Fields" (with defensive "Not detected" formatting) and "Rule Validation" sections (verdict, anomaly score, and comprehensive 11-point heuristic explanations list), wrapped in resilient exception guards ("Not available yet"). |
 | **Phase 5** | Person 3 Module Integration (CNN + Forensics + Grad-CAM) | **Completed (100%)** | Integrated ResNet-18 visual classification baseline (`predict`), Error Level Analysis (ELA) and conservative metadata inspection (`analyze_image`), and Grad-CAM visual heatmaps/overlays (`generate_gradcam`). Wired in independent exception guards for all three components with strictly cited empirical baseline metrics. |
 | **Phase 6** | Lightweight Combined Summary (Provisional) | **Completed (100%)** | Built a transparent, single-sentence provisional assessment combining Person 2's Rule Verdict and Person 3's CNN prediction. Implemented explicit 3-state status output with hardcoded CNN confidence threshold (`p >= 0.70`), dynamic module contribution tracking, and honest provisional disclaimers. |
+| **Phase 7** | Comprehensive Error Handling & Fault Isolation Pass | **Completed (100%)** | Validated end-to-end resilience across 6 edge-case scenarios: non-image uploads, truncated/mangled byte streams, 10x10 px micro-images, zero-text inputs, missing CNN checkpoint files, and unsubmitted page states. Confirmed zero application crashes and zero exposed stack traces. |
 
 ---
 
@@ -27,11 +28,12 @@ Person 1 owns the end-to-end frontend user interface, multi-modal integration pi
 
 ```
 PERSON_1_RITHVIK/
-├── README.md                  # Subsystem documentation & phase progress tracker
-├── test_app.py                # Automated Streamlit AppTest verification suite (pytest)
-├── temp/                      # Local transient directory for uploaded screenshots
-│   ├── .gitkeep               # Tracks temp folder in git
-│   └── (transient images)     # Ignored by .gitignore to prevent repo pollution
+├── README.md                          # Subsystem documentation & phase progress tracker
+├── test_app.py                        # Automated Streamlit AppTest verification suite (pytest)
+├── test_phase7_error_handling.py      # Automated 6-case stress/error handling test suite
+├── temp/                              # Local transient directory for uploaded screenshots
+│   ├── .gitkeep                       # Tracks temp folder in git
+│   └── (transient images)             # Ignored by .gitignore to prevent repo pollution
 ```
 
 Root-level files owned/managed:
@@ -113,6 +115,19 @@ D:\elenxis/
   Directly displays which modules contributed (e.g. `*Based on: rule engine, CNN*` or `*Based on: rule engine only — CNN unavailable*`). If both fail, safely displays `*Based on: none available.*` with zero crashes.
 - **Academic Disclaimer**:
   Always displays: *"Provisional combined signal — not a calibrated ensemble. Full ensemble scoring is planned for a later milestone."*
+
+### Phase 7: Comprehensive Error Handling & Fault Isolation
+- **Stress & Edge-Case Validation Matrix**:
+  Evaluated all 6 realistic failure and boundary conditions to ensure that the platform remains completely resilient with zero application crashes, zero exposed stack traces, and proper localized fallbacks:
+
+| Case # | Test Scenario | Trigger Condition | Expected Behavior | Observed Result | Status |
+|:---:|:---|:---|:---|:---|:---:|
+| **1** | Non-Image File Upload | `.txt` payload disguised as `.png` | Pillow validation rejects file with clear `st.error`; Analyze button hidden | Handled cleanly; 0 crashes | **PASS** |
+| **2** | Corrupted Image File | Valid PNG header with truncated bitstream | Pillow `.load()` throws decode exception; caught with `st.error` | Handled cleanly; 0 crashes | **PASS** |
+| **3** | Micro-Resolution Image | 10×10 px image upload | Valid image loads; OCR fields show "Not detected"; rules & CNN evaluate safely | Handled cleanly; 0 crashes | **PASS** |
+| **4** | Zero-Text Image | 200×200 px blank white canvas | All OCR fields output `"Not detected"`; rule engine reports `SUSPICIOUS` | Handled cleanly; 0 crashes | **PASS** |
+| **5** | Missing Model Checkpoint | Simulated missing `resnet18_baseline_best.pt` | CNN & Grad-CAM show `"Not available yet"`; Combined status falls back to Insufficient Evidence | Handled cleanly; checkpoint restored | **PASS** |
+| **6** | No File Selected | Fresh page load / unsubmitted state | "Analyze Screenshot" button is unreachable; neutral info prompt displayed | Handled cleanly; 0 crashes | **PASS** |
 
 ---
 
