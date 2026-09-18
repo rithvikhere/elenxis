@@ -16,11 +16,13 @@ try:
 except Exception as t_err:
     print(f"[Warning] Tesseract init: {t_err}", file=sys.stderr)
 
-# Ensure PERSON_2_NIVASH is on sys.path for importing OCR & Rule modules
+# Ensure repository root and subsystem folders are on sys.path for importing modules
 REPO_ROOT = pathlib.Path(__file__).resolve().parent
 PERSON_2_DIR = str(REPO_ROOT / "PERSON_2_NIVASH")
 if PERSON_2_DIR not in sys.path:
     sys.path.insert(0, PERSON_2_DIR)
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 # 1. Page Configuration
 st.set_page_config(
@@ -79,6 +81,9 @@ else:
     # Reset analysis state when file is cleared
     st.session_state.pop("ocr_output", None)
     st.session_state.pop("rule_verdict", None)
+    st.session_state.pop("cnn_output", None)
+    st.session_state.pop("forensics_output", None)
+    st.session_state.pop("gradcam_output", None)
     st.session_state.pop("analyzed_file", None)
 
 # Helper function to format values as "Not detected" if missing or empty
@@ -87,10 +92,10 @@ def format_field_value(val):
         return "Not detected"
     return str(val)
 
-# 7. Action Button & Integration (Phase 4: Wire In Person 2)
+# 7. Action Button & Integration (Phase 4 & Phase 5)
 if valid_image is not None and temp_image_path is not None:
     if st.button("Analyze Screenshot", type="primary"):
-        # Run OCR extraction
+        # --- Person 2: Run OCR Extraction ---
         ocr_res = None
         try:
             from src.ocr import extract_transaction_fields
@@ -99,7 +104,7 @@ if valid_image is not None and temp_image_path is not None:
             print(f"[Error] OCR extraction failed: {exc}", file=sys.stderr)
             traceback.print_exc()
 
-        # Run Rule Validation
+        # --- Person 2: Run Rule Validation ---
         rule_res = None
         if ocr_res is not None:
             try:
@@ -109,13 +114,56 @@ if valid_image is not None and temp_image_path is not None:
                 print(f"[Error] Rule validation failed: {exc}", file=sys.stderr)
                 traceback.print_exc()
 
+        # --- Person 3: Run CNN Visual Prediction ---
+        cnn_res = None
+        try:
+            from PERSON_3_SANJAY.src.api import predict as cnn_predict
+            cnn_res = cnn_predict(temp_image_path)
+        except Exception as exc:
+            print(f"[Error] CNN prediction failed: {exc}", file=sys.stderr)
+            traceback.print_exc()
+
+        # --- Person 3: Run Image Forensics (ELA + Metadata) ---
+        forensics_res = None
+        try:
+            from PERSON_3_SANJAY.src.api import analyze_image as forensic_analyze_image
+            forensics_res = forensic_analyze_image(temp_image_path, ela_output_dir=str(TEMP_DIR))
+        except Exception as exc:
+            print(f"[Error] Forensic analysis failed: {exc}", file=sys.stderr)
+            traceback.print_exc()
+
+        # --- Person 3: Run Grad-CAM Explainability ---
+        gradcam_res = None
+        try:
+            from PERSON_3_SANJAY.src.explainability.gradcam import generate_gradcam
+            weights_path = REPO_ROOT / "PERSON_3_SANJAY" / "models" / "resnet18_baseline_best.pt"
+            if weights_path.exists():
+                gradcam_res = generate_gradcam(
+                    temp_image_path,
+                    model_path=str(weights_path),
+                    output_dir=str(TEMP_DIR)
+                )
+            else:
+                print("[Warning] CNN weights not found for Grad-CAM.", file=sys.stderr)
+        except Exception as exc:
+            print(f"[Error] Grad-CAM generation failed: {exc}", file=sys.stderr)
+            traceback.print_exc()
+
+        # Save results to session state
         st.session_state["ocr_output"] = ocr_res
         st.session_state["rule_verdict"] = rule_res
+        st.session_state["cnn_output"] = cnn_res
+        st.session_state["forensics_output"] = forensics_res
+        st.session_state["gradcam_output"] = gradcam_res
         st.session_state["analyzed_file"] = uploaded_file.name
 
     # Display analysis sections if current file has been analyzed
     if st.session_state.get("analyzed_file") == uploaded_file.name:
         st.divider()
+
+        # =========================================================================
+        # PHASE 4: PERSON 2 MODULES (OCR + RULES)
+        # =========================================================================
 
         # Section 1: OCR Extracted Fields
         st.subheader("OCR Extracted Fields")
@@ -143,7 +191,6 @@ if valid_image is not None and temp_image_path is not None:
             st.markdown(f"- **Anomaly Score:** {score_formatted}")
             st.markdown("**Rule Explanations:**")
 
-            # Option 2: Full checklist of checks performed (violations, warnings, passed checks)
             violations = rule_data.get("violations", [])
             warnings = rule_data.get("warnings", [])
             passed_checks = rule_data.get("passed_checks", [])
@@ -161,6 +208,79 @@ if valid_image is not None and temp_image_path is not None:
                     st.markdown(f"- {item}")
             else:
                 st.markdown("- No rule checks available")
+        else:
+            st.info("Not available yet")
+
+        # =========================================================================
+        # PHASE 5: PERSON 3 MODULES (CNN + FORENSICS + GRAD-CAM)
+        # =========================================================================
+        st.divider()
+
+        # Section 3: CNN Visual Classification
+        st.subheader("CNN Visual Classification")
+        cnn_data = st.session_state.get("cnn_output")
+        if cnn_data is not None and isinstance(cnn_data, dict) and cnn_data.get("status") == "success":
+            pred_class = format_field_value(cnn_data.get("class"))
+            prob = cnn_data.get("probability")
+            prob_str = f"{prob:.4f}" if isinstance(prob, (int, float)) else "Not detected"
+
+            st.markdown(f"- **Predicted Class:** {pred_class}")
+            st.markdown(f"- **Probability:** {prob_str}")
+            st.caption("Prediction from a small baseline model — accuracy 0.75, recall 1.00 on a 12-image held-out test set.")
+        else:
+            st.info("Not available yet")
+
+        # Section 4: Image Forensics (ELA & Metadata)
+        st.subheader("Image Forensics")
+        forensics_data = st.session_state.get("forensics_output")
+        if forensics_data is not None and isinstance(forensics_data, dict) and forensics_data.get("status") == "available":
+            # Separate Block A: ELA Visualization
+            st.markdown("#### Error Level Analysis (ELA)")
+            ela_dict = forensics_data.get("ela", {})
+            ela_path = ela_dict.get("output_visualization_path")
+            if ela_path and os.path.exists(ela_path):
+                st.image(ela_path, caption=None, width=400)
+            st.caption("ELA and metadata are evidence for inspection, not proof of manipulation.")
+
+            # Separate Block B: Metadata / EXIF Findings
+            st.markdown("#### Metadata & EXIF Analysis")
+            meta_dict = forensics_data.get("metadata", {})
+            if meta_dict and meta_dict.get("status") == "available":
+                st.markdown(f"- **File Format:** {format_field_value(meta_dict.get('file_format'))}")
+                dims = meta_dict.get("dimensions")
+                if isinstance(dims, dict):
+                    st.markdown(f"- **Dimensions:** {dims.get('width', 'Not detected')} × {dims.get('height', 'Not detected')} px")
+                file_size = meta_dict.get("file_size_bytes")
+                st.markdown(f"- **File Size:** {file_size} bytes" if file_size else "- **File Size:** Not detected")
+                st.markdown(f"- **Software:** {format_field_value(meta_dict.get('software'))}")
+
+                has_exif = meta_dict.get("has_exif", False)
+                exif_tags = meta_dict.get("exif_fields", {})
+                if has_exif and exif_tags:
+                    st.markdown(f"- **EXIF Header:** Present ({len(exif_tags)} tag(s) detected)")
+                else:
+                    st.markdown("- **EXIF Header:** No EXIF metadata is present.")
+                    st.caption("Missing EXIF is normal for screenshots and shared images and is not itself suspicious.")
+            else:
+                st.info("Not available yet")
+        else:
+            st.info("Not available yet")
+
+        # Section 5: Model Explainability (Grad-CAM)
+        st.subheader("Model Explainability (Grad-CAM)")
+        gradcam_data = st.session_state.get("gradcam_output")
+        if gradcam_data is not None and isinstance(gradcam_data, dict) and gradcam_data.get("status") == "available":
+            output_paths = gradcam_data.get("output_paths", {})
+            overlay_path = output_paths.get("overlay")
+            heatmap_path = output_paths.get("heatmap")
+            if overlay_path and os.path.exists(overlay_path):
+                st.image(overlay_path, width=400)
+                st.caption("Highlights regions that influenced the model's prediction — not proof that a region was edited.")
+            elif heatmap_path and os.path.exists(heatmap_path):
+                st.image(heatmap_path, width=400)
+                st.caption("Highlights regions that influenced the model's prediction — not proof that a region was edited.")
+            else:
+                st.info("Not available yet")
         else:
             st.info("Not available yet")
 

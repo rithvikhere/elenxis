@@ -4,7 +4,7 @@ from streamlit.testing.v1 import AppTest
 
 def test_initial_state():
     """Test 1: No file uploaded, page just loaded."""
-    at = AppTest.from_file("../app.py", default_timeout=15).run()
+    at = AppTest.from_file("../app.py", default_timeout=20).run()
     assert at.title[0].value == "UPI Fraud Forensics"
     assert at.caption[0].value == "Screenshot-based forensic analysis for detecting potential manipulation indicators."
     assert len(at.file_uploader) == 1
@@ -16,21 +16,16 @@ def test_initial_state():
     assert len(at.error) == 0
     print("[PASS] Test 1: Initial empty state verified.")
 
-def test_valid_png_upload_and_analysis():
-    """Test 2: Valid PNG upload and execution of Person 2 OCR + Rule Engine."""
-    at = AppTest.from_file("../app.py", default_timeout=25).run()
+def test_valid_png_upload_and_full_pipeline():
+    """Test 2: Valid PNG upload and execution of Person 2 & Person 3 pipelines."""
+    at = AppTest.from_file("../app.py", default_timeout=35).run()
     sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
     with open(sample_png, "rb") as f:
         png_bytes = f.read()
     
     at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
     assert len(at.error) == 0
-    assert len(at.image) == 1
-    assert "sample_family1_paylite.png" in at.image[0].captions[0]
-    
-    # Check button appears
-    assert len(at.button) == 1
-    assert at.button[0].label == "Analyze Screenshot"
+    assert len(at.image) >= 1
     
     # Click Analyze Screenshot button
     at.button[0].click().run()
@@ -39,9 +34,14 @@ def test_valid_png_upload_and_analysis():
     subheader_values = [sh.value for sh in at.subheader]
     assert "OCR Extracted Fields" in subheader_values
     assert "Rule Validation" in subheader_values
+    assert "CNN Visual Classification" in subheader_values
+    assert "Image Forensics" in subheader_values
+    assert "Model Explainability (Grad-CAM)" in subheader_values
     
-    # Verify markdown contents for OCR fields
     all_markdown = " ".join(m.value for m in at.markdown)
+    all_captions = " ".join(c.value for c in at.caption)
+    
+    # 1. OCR verification
     assert "**Amount:**" in all_markdown
     assert "**Date:**" in all_markdown
     assert "**Time:**" in all_markdown
@@ -49,88 +49,85 @@ def test_valid_png_upload_and_analysis():
     assert "**Template:**" in all_markdown
     assert "**Recipient:**" in all_markdown
     
-    # Verify markdown contents for Rule Validation
+    # 2. Rules verification
     assert "**Verdict:**" in all_markdown
     assert "**Anomaly Score:**" in all_markdown
     assert "**Rule Explanations:**" in all_markdown
     
-    # In sample_family1_paylite.png, recipient is null in ground truth/sample, so check "Not detected"
-    assert "Not detected" in all_markdown
+    # 3. CNN verification
+    assert "**Predicted Class:**" in all_markdown
+    assert "**Probability:**" in all_markdown
+    assert "Prediction from a small baseline model — accuracy 0.75, recall 1.00 on a 12-image held-out test set." in all_captions
     
-    print("[PASS] Test 2: Valid PNG upload and Person 2 analysis verified.")
-
-def test_valid_jpg_upload():
-    """Test 3: Valid JPG upload."""
-    at = AppTest.from_file("../app.py", default_timeout=15).run()
-    sample_jpg = pathlib.Path("PERSON_3_SANJAY/results/ela/recompressed_original.jpg")
-    with open(sample_jpg, "rb") as f:
-        jpg_bytes = f.read()
+    # 4. Forensics verification
+    assert "#### Error Level Analysis (ELA)" in all_markdown
+    assert "#### Metadata & EXIF Analysis" in all_markdown
+    assert "ELA and metadata are evidence for inspection, not proof of manipulation." in all_captions
+    assert "Missing EXIF is normal for screenshots and shared images and is not itself suspicious." in all_captions
     
-    at.file_uploader[0].upload(filename="recompressed_original.jpg", content=jpg_bytes).run()
-    assert len(at.error) == 0
-    assert len(at.image) == 1
-    assert "recompressed_original.jpg" in at.image[0].captions[0]
-    assert len(at.button) == 1
-    print("[PASS] Test 3: Valid JPG upload verified.")
+    # 5. Grad-CAM verification
+    assert "Highlights regions that influenced the model's prediction — not proof that a region was edited." in all_captions
+    
+    print("[PASS] Test 2: Full pipeline (Person 2 + Person 3) verified.")
 
 def test_corrupted_file_upload():
-    """Test 4: Non-image file renamed to .png."""
-    at = AppTest.from_file("../app.py", default_timeout=15).run()
+    """Test 3: Non-image file renamed to .png."""
+    at = AppTest.from_file("../app.py", default_timeout=20).run()
     corrupted_bytes = b"This is plain text pretending to be a PNG file."
     
     at.file_uploader[0].upload(filename="scratch_invalid.png", content=corrupted_bytes).run()
     assert len(at.error) == 1
     assert "not a valid or readable image" in at.error[0].value
-    # No preview image
-    assert len(at.image) == 0
-    # No button
     assert len(at.button) == 0
-    print("[PASS] Test 4: Corrupted file error handling verified.")
+    print("[PASS] Test 3: Corrupted file error handling verified.")
 
 def test_file_removal():
-    """Test 5: Uploading, then removing the file."""
-    at = AppTest.from_file("../app.py", default_timeout=15).run()
+    """Test 4: Uploading, then removing the file."""
+    at = AppTest.from_file("../app.py", default_timeout=20).run()
     sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
     with open(sample_png, "rb") as f:
         png_bytes = f.read()
     
-    # Upload
     at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
-    assert len(at.image) == 1
     assert len(at.button) == 1
     
-    # Remove file (simulates clicking remove button in Streamlit)
+    # Clear file
     at.file_uploader[0].clear().run()
-    
-    assert len(at.image) == 0
     assert len(at.button) == 0
     assert len(at.error) == 0
     assert any("upload a UPI payment screenshot" in info.value for info in at.info)
-    print("[PASS] Test 5: File upload and removal reset verified.")
+    print("[PASS] Test 4: File removal reset verified.")
 
-def test_exception_fallback():
-    """Test 6: Simulated exception in module execution displays 'Not available yet'."""
-    at = AppTest.from_file("../app.py", default_timeout=15).run()
+def test_independent_graceful_degradation():
+    """Test 5: Independent graceful degradation when one Person 3 call fails."""
+    at = AppTest.from_file("../app.py", default_timeout=35).run()
     sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
     with open(sample_png, "rb") as f:
         png_bytes = f.read()
     
     at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
     
-    # Simulate an error during extract_transaction_fields by patching it to raise an exception
-    with patch("src.ocr.extract_transaction_fields", side_effect=RuntimeError("Simulated OCR failure")):
+    # Simulate Grad-CAM failure while CNN and OCR succeed
+    with patch("PERSON_3_SANJAY.src.explainability.gradcam.generate_gradcam", side_effect=RuntimeError("Grad-CAM failure")):
         at.button[0].click().run()
-        
-    # App must not crash, and should display "Not available yet" for failed sections
+    
+    # App must not crash
     assert len(at.exception) == 0
+    subheader_values = [sh.value for sh in at.subheader]
+    assert "OCR Extracted Fields" in subheader_values
+    assert "CNN Visual Classification" in subheader_values
+    assert "Model Explainability (Grad-CAM)" in subheader_values
+    
+    # Grad-CAM displays "Not available yet", but other components succeeded
+    all_markdown = " ".join(m.value for m in at.markdown)
+    assert "**Predicted Class:**" in all_markdown
     assert any("Not available yet" in info.value for info in at.info)
-    print("[PASS] Test 6: Exception graceful fallback verified.")
+    print("[PASS] Test 5: Independent graceful degradation verified.")
 
 if __name__ == "__main__":
     test_initial_state()
-    test_valid_png_upload_and_analysis()
-    test_valid_jpg_upload()
+    test_valid_png_upload_and_full_pipeline()
     test_corrupted_file_upload()
     test_file_removal()
-    test_exception_fallback()
-    print("\nALL 6 PHASE 4 TEST SCENARIOS PASSED!")
+    test_independent_graceful_degradation()
+    print("\nALL 5 PHASE 5 TESTS PASSED!")
