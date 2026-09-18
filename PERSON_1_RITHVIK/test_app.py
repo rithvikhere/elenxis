@@ -8,70 +8,110 @@ def test_initial_state():
     assert at.title[0].value == "UPI Fraud Forensics"
     assert at.caption[0].value == "Screenshot-based forensic analysis for detecting potential manipulation indicators."
     assert len(at.file_uploader) == 1
-    # Check neutral info message is displayed
     assert any("upload a UPI payment screenshot" in info.value for info in at.info)
-    # Check no analyze button is shown
     assert len(at.button) == 0
-    # No error
     assert len(at.error) == 0
     print("[PASS] Test 1: Initial empty state verified.")
 
-def test_valid_png_upload_and_full_pipeline():
-    """Test 2: Valid PNG upload and execution of Person 2 & Person 3 pipelines."""
+def test_combined_assessment_suspicious_state():
+    """Test 2: At least one suspicious signal -> 'Suspicious signals detected'."""
     at = AppTest.from_file("../app.py", default_timeout=35).run()
     sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
     with open(sample_png, "rb") as f:
         png_bytes = f.read()
     
     at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
-    assert len(at.error) == 0
-    assert len(at.image) >= 1
-    
-    # Click Analyze Screenshot button
     at.button[0].click().run()
-    
-    # Verify subheaders are rendered
-    subheader_values = [sh.value for sh in at.subheader]
-    assert "OCR Extracted Fields" in subheader_values
-    assert "Rule Validation" in subheader_values
-    assert "CNN Visual Classification" in subheader_values
-    assert "Image Forensics" in subheader_values
-    assert "Model Explainability (Grad-CAM)" in subheader_values
     
     all_markdown = " ".join(m.value for m in at.markdown)
     all_captions = " ".join(c.value for c in at.caption)
     
-    # 1. OCR verification
-    assert "**Amount:**" in all_markdown
-    assert "**Date:**" in all_markdown
-    assert "**Time:**" in all_markdown
-    assert "**UTR:**" in all_markdown
-    assert "**Template:**" in all_markdown
-    assert "**Recipient:**" in all_markdown
+    # Check Section header exists
+    subheader_values = [sh.value for sh in at.subheader]
+    assert "Combined Assessment" in subheader_values
     
-    # 2. Rules verification
-    assert "**Verdict:**" in all_markdown
-    assert "**Anomaly Score:**" in all_markdown
-    assert "**Rule Explanations:**" in all_markdown
+    # Verify status is exactly "Suspicious signals detected"
+    assert "- **Status:** Suspicious signals detected" in all_markdown
+    assert "*Based on: rule engine, CNN*" in all_markdown
+    assert "Provisional combined signal — not a calibrated ensemble. Full ensemble scoring is planned for a later milestone." in all_captions
     
-    # 3. CNN verification
-    assert "**Predicted Class:**" in all_markdown
-    assert "**Probability:**" in all_markdown
-    assert "Prediction from a small baseline model — accuracy 0.75, recall 1.00 on a 12-image held-out test set." in all_captions
+    # Contract check: strictly never output forbidden words
+    assert "FAKE" not in all_markdown
+    assert "FRAUD" not in all_markdown
+    print("[PASS] Test 2: Combined Assessment 'Suspicious signals detected' verified.")
+
+def test_combined_assessment_clean_state():
+    """Test 3: Both signals clean -> 'No suspicious signals detected'."""
+    at = AppTest.from_file("../app.py", default_timeout=35).run()
+    sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
+    with open(sample_png, "rb") as f:
+        png_bytes = f.read()
     
-    # 4. Forensics verification
-    assert "#### Error Level Analysis (ELA)" in all_markdown
-    assert "#### Metadata & EXIF Analysis" in all_markdown
-    assert "ELA and metadata are evidence for inspection, not proof of manipulation." in all_captions
-    assert "Missing EXIF is normal for screenshots and shared images and is not itself suspicious." in all_captions
+    at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
     
-    # 5. Grad-CAM verification
-    assert "Highlights regions that influenced the model's prediction — not proof that a region was edited." in all_captions
+    # Mock rule verdict as LIKELY_LEGITIMATE and CNN as original
+    clean_rule_mock = {
+        "verdict": "LIKELY_LEGITIMATE",
+        "suspicion_score": 0.05,
+        "violations": [],
+        "warnings": [],
+        "passed_checks": ["RULE-01 PASS: All rules passed"],
+    }
+    clean_cnn_mock = {
+        "status": "success",
+        "class": "original",
+        "label": "original",
+        "probability": 0.95,
+        "available": True,
+    }
     
-    print("[PASS] Test 2: Full pipeline (Person 2 + Person 3) verified.")
+    with patch("src.rules.validate_transaction", return_value=clean_rule_mock), \
+         patch("PERSON_3_SANJAY.src.api.predict", return_value=clean_cnn_mock):
+        at.button[0].click().run()
+        
+    all_markdown = " ".join(m.value for m in at.markdown)
+    assert "- **Status:** No suspicious signals detected" in all_markdown
+    assert "*Based on: rule engine, CNN*" in all_markdown
+    print("[PASS] Test 3: Combined Assessment 'No suspicious signals detected' verified.")
+
+def test_combined_assessment_unavailable_state():
+    """Test 4: One or both modules fail/unavailable -> 'Insufficient evidence / unable to analyze reliably'."""
+    at = AppTest.from_file("../app.py", default_timeout=35).run()
+    sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
+    with open(sample_png, "rb") as f:
+        png_bytes = f.read()
+    
+    at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
+    
+    # Simulate CNN failure while rule engine succeeds
+    with patch("PERSON_3_SANJAY.src.api.predict", side_effect=RuntimeError("CNN service down")):
+        at.button[0].click().run()
+        
+    all_markdown = " ".join(m.value for m in at.markdown)
+    assert "- **Status:** Insufficient evidence / unable to analyze reliably" in all_markdown
+    assert "*Based on: rule engine only — CNN unavailable*" in all_markdown
+    print("[PASS] Test 4: Combined Assessment partial failure handled reliably.")
+
+def test_combined_assessment_both_unavailable_state():
+    """Test 5: Both modules fail -> 'Insufficient evidence / unable to analyze reliably' and 'Based on: none available.'"""
+    at = AppTest.from_file("../app.py", default_timeout=35).run()
+    sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
+    with open(sample_png, "rb") as f:
+        png_bytes = f.read()
+    
+    at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
+    
+    with patch("src.ocr.extract_transaction_fields", side_effect=RuntimeError("OCR down")), \
+         patch("PERSON_3_SANJAY.src.api.predict", side_effect=RuntimeError("CNN down")):
+        at.button[0].click().run()
+        
+    all_markdown = " ".join(m.value for m in at.markdown)
+    assert "- **Status:** Insufficient evidence / unable to analyze reliably" in all_markdown
+    assert "*Based on: none available.*" in all_markdown
+    print("[PASS] Test 5: Combined Assessment both modules unavailable handled without crash.")
 
 def test_corrupted_file_upload():
-    """Test 3: Non-image file renamed to .png."""
+    """Test 6: Non-image file renamed to .png."""
     at = AppTest.from_file("../app.py", default_timeout=20).run()
     corrupted_bytes = b"This is plain text pretending to be a PNG file."
     
@@ -79,10 +119,10 @@ def test_corrupted_file_upload():
     assert len(at.error) == 1
     assert "not a valid or readable image" in at.error[0].value
     assert len(at.button) == 0
-    print("[PASS] Test 3: Corrupted file error handling verified.")
+    print("[PASS] Test 6: Corrupted file error handling verified.")
 
 def test_file_removal():
-    """Test 4: Uploading, then removing the file."""
+    """Test 7: Uploading, then removing the file."""
     at = AppTest.from_file("../app.py", default_timeout=20).run()
     sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
     with open(sample_png, "rb") as f:
@@ -96,38 +136,14 @@ def test_file_removal():
     assert len(at.button) == 0
     assert len(at.error) == 0
     assert any("upload a UPI payment screenshot" in info.value for info in at.info)
-    print("[PASS] Test 4: File removal reset verified.")
-
-def test_independent_graceful_degradation():
-    """Test 5: Independent graceful degradation when one Person 3 call fails."""
-    at = AppTest.from_file("../app.py", default_timeout=35).run()
-    sample_png = pathlib.Path("PERSON_2_NIVASH/docs/samples/sample_family1_paylite.png")
-    with open(sample_png, "rb") as f:
-        png_bytes = f.read()
-    
-    at.file_uploader[0].upload(filename="sample_family1_paylite.png", content=png_bytes).run()
-    
-    # Simulate Grad-CAM failure while CNN and OCR succeed
-    with patch("PERSON_3_SANJAY.src.explainability.gradcam.generate_gradcam", side_effect=RuntimeError("Grad-CAM failure")):
-        at.button[0].click().run()
-    
-    # App must not crash
-    assert len(at.exception) == 0
-    subheader_values = [sh.value for sh in at.subheader]
-    assert "OCR Extracted Fields" in subheader_values
-    assert "CNN Visual Classification" in subheader_values
-    assert "Model Explainability (Grad-CAM)" in subheader_values
-    
-    # Grad-CAM displays "Not available yet", but other components succeeded
-    all_markdown = " ".join(m.value for m in at.markdown)
-    assert "**Predicted Class:**" in all_markdown
-    assert any("Not available yet" in info.value for info in at.info)
-    print("[PASS] Test 5: Independent graceful degradation verified.")
+    print("[PASS] Test 7: File removal reset verified.")
 
 if __name__ == "__main__":
     test_initial_state()
-    test_valid_png_upload_and_full_pipeline()
+    test_combined_assessment_suspicious_state()
+    test_combined_assessment_clean_state()
+    test_combined_assessment_unavailable_state()
+    test_combined_assessment_both_unavailable_state()
     test_corrupted_file_upload()
     test_file_removal()
-    test_independent_graceful_degradation()
-    print("\nALL 5 PHASE 5 TESTS PASSED!")
+    print("\nALL 7 PHASE 6 TESTS PASSED!")

@@ -19,7 +19,7 @@ Person 1 owns the end-to-end frontend user interface, multi-modal integration pi
 | **Phase 3** | Streamlit Web App Skeleton & Validation Pipeline | **Completed (100%)** | Built root `app.py` Streamlit web interface with wide layout, screenshot uploader (`.png`, `.jpg`, `.jpeg`), robust Pillow image integrity validation, preview render, local temp storage (`PERSON_1_RITHVIK/temp/`), "Analyze Screenshot" action button with placeholder triggers, neutral empty states, and automated 5-scenario test suite (`test_app.py`). |
 | **Phase 4** | Person 2 Module Integration (OCR + Rule Engine) | **Completed (100%)** | Replaced placeholder button with live calls to `extract_transaction_fields` and `validate_transaction`. Rendered structured "OCR Extracted Fields" (with defensive "Not detected" formatting) and "Rule Validation" sections (verdict, anomaly score, and comprehensive 11-point heuristic explanations list), wrapped in resilient exception guards ("Not available yet"). |
 | **Phase 5** | Person 3 Module Integration (CNN + Forensics + Grad-CAM) | **Completed (100%)** | Integrated ResNet-18 visual classification baseline (`predict`), Error Level Analysis (ELA) and conservative metadata inspection (`analyze_image`), and Grad-CAM visual heatmaps/overlays (`generate_gradcam`). Wired in independent exception guards for all three components with strictly cited empirical baseline metrics. |
-| **Phase 6** | Combined Multi-Modal Forensic Verdict & Executive Reporting | *Upcoming* | Formulate a calibrated multi-modal decision rule combining OCR rule heuristics, CNN visual predictions, and ELA/metadata forensic signals into a unified forensic report. |
+| **Phase 6** | Lightweight Combined Summary (Provisional) | **Completed (100%)** | Built a transparent, single-sentence provisional assessment combining Person 2's Rule Verdict and Person 3's CNN prediction. Implemented explicit 3-state status output with hardcoded CNN confidence threshold (`p >= 0.70`), dynamic module contribution tracking, and honest provisional disclaimers. |
 
 ---
 
@@ -32,7 +32,6 @@ PERSON_1_RITHVIK/
 ├── temp/                      # Local transient directory for uploaded screenshots
 │   ├── .gitkeep               # Tracks temp folder in git
 │   └── (transient images)     # Ignored by .gitignore to prevent repo pollution
-└── (upcoming integration modules for Phase 6)
 ```
 
 Root-level files owned/managed:
@@ -84,7 +83,7 @@ D:\elenxis/
 
 - **Design Decision — Explanations Presentation**:
   - Implemented **Option 2 (Full Heuristic Audit)**: Shows an itemized checklist of all 11 format, range, and temporal rule checks performed by Person 2 (violations, warnings, and passed checks). This guarantees 100% academic transparency during panel evaluation.
-  - Future refinement planned: Option C polish (executive NLP paragraph summary + anomaly bullets) for Phase 6.
+  - Future refinement planned: Option C polish (executive NLP paragraph summary + anomaly bullets).
 
 ### Phase 5: Person 3 Integration (CNN + Forensics + Grad-CAM)
 - **Live Pipeline Execution**:
@@ -102,6 +101,19 @@ D:\elenxis/
   4. **Independent Fault Isolation**:
      - All 3 sub-calls (`predict`, `analyze_image`, `generate_gradcam`) run in independent `try/except` blocks. If any component encounters an error, only that specific component displays `"Not available yet"`, while the remaining components continue to render reliably.
 
+### Phase 6: Lightweight Combined Assessment (Provisional)
+- **Combination Logic & Decision Rule**:
+  Combines the existing Phase 4 (Rule Verdict) and Phase 5 (CNN Prediction) outputs into a transparent, honest overall status:
+  - **Threshold**: Hardcoded CNN confidence threshold `CNN_CONFIDENCE_THRESHOLD = 0.70` (`p >= 0.70`).
+  - **Condition 1 (Suspicious)**: If `rule_verdict == "SUSPICIOUS"` OR `CNN predicts "modified"` with `p >= 0.70` &rarr; displays **`"Suspicious signals detected"`**.
+  - **Condition 2 (Clean)**: If `rule_verdict == "LIKELY_LEGITIMATE"` AND `CNN predicts "original"` &rarr; displays **`"No suspicious signals detected"`**.
+  - **Condition 3 (Fallback)**: If either module is unavailable or failed &rarr; displays **`"Insufficient evidence / unable to analyze reliably"`**.
+  - **Strict Status Contract**: The output is guaranteed to be strictly one of these three strings. Forbidden speculative words such as `"FAKE"` or `"FRAUD"` are never produced.
+- **Dynamic Module Attribution**:
+  Directly displays which modules contributed (e.g. `*Based on: rule engine, CNN*` or `*Based on: rule engine only — CNN unavailable*`). If both fail, safely displays `*Based on: none available.*` with zero crashes.
+- **Academic Disclaimer**:
+  Always displays: *"Provisional combined signal — not a calibrated ensemble. Full ensemble scoring is planned for a later milestone."*
+
 ---
 
 ## 🧪 Testing & Verification
@@ -117,10 +129,12 @@ py -m pytest PERSON_1_RITHVIK\test_app.py -v
 | Test Case | Scenario | Expected Behavior | Result |
 |---|---|---|:---:|
 | `test_initial_state` | Fresh page load (no file) | Neutral info message, file uploader visible, 0 buttons, 0 errors | **PASSED** |
-| `test_valid_png_upload_and_full_pipeline` | Uploading valid `.png` & clicking Analyze | Executes OCR, Rules, CNN, ELA/Metadata, and Grad-CAM; validates all fields, citations, and captions | **PASSED** |
+| `test_combined_assessment_suspicious_state` | Suspicious rule or high-confidence CNN | Displays `"Suspicious signals detected"` with exact attribution & disclaimer | **PASSED** |
+| `test_combined_assessment_clean_state` | Both rule and CNN clean | Displays `"No suspicious signals detected"` with attribution | **PASSED** |
+| `test_combined_assessment_unavailable_state` | One module unavailable/fails | Displays `"Insufficient evidence / unable to analyze reliably"` with fallback attribution | **PASSED** |
+| `test_combined_assessment_both_unavailable_state` | Both modules fail | Displays `"Insufficient evidence / unable to analyze reliably"` and `"Based on: none available."` | **PASSED** |
 | `test_corrupted_file_upload` | Uploading non-image/corrupted file | `st.error` displayed, no preview, no button, no crash | **PASSED** |
 | `test_file_removal` | Uploading then clicking remove (`✕`) | Clean reset to empty neutral state without errors | **PASSED** |
-| `test_independent_graceful_degradation` | Simulated failure in Grad-CAM | Other sections succeed, Grad-CAM displays "Not available yet"; zero crashes | **PASSED** |
 
 ---
 

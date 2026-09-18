@@ -284,6 +284,64 @@ if valid_image is not None and temp_image_path is not None:
         else:
             st.info("Not available yet")
 
+        # =========================================================================
+        # PHASE 6: COMBINED ASSESSMENT (PROVISIONAL)
+        # =========================================================================
+        st.divider()
+        st.subheader("Combined Assessment")
+
+        # Hardcoded threshold for meaningfully high CNN confidence: probability >= 0.70
+        CNN_CONFIDENCE_THRESHOLD = 0.70
+
+        # Assess module availability from Phase 4 and Phase 5 outputs
+        rule_available = (
+            rule_data is not None
+            and isinstance(rule_data, dict)
+            and rule_data.get("verdict") in ("SUSPICIOUS", "LIKELY_LEGITIMATE")
+        )
+        cnn_available = (
+            cnn_data is not None
+            and isinstance(cnn_data, dict)
+            and cnn_data.get("status") == "success"
+            and cnn_data.get("class") in ("modified", "original")
+        )
+
+        # Derive dynamic contribution descriptor
+        if rule_available and cnn_available:
+            contributed_str = "Based on: rule engine, CNN"
+        elif rule_available and not cnn_available:
+            contributed_str = "Based on: rule engine only — CNN unavailable"
+        elif not rule_available and cnn_available:
+            contributed_str = "Based on: CNN only — rule engine unavailable"
+        else:
+            contributed_str = "Based on: none available."
+
+        # Compute combined status using strictly specified three-state logic
+        if not (rule_available and cnn_available):
+            combined_status = "Insufficient evidence / unable to analyze reliably"
+        else:
+            rule_verdict_val = rule_data.get("verdict")
+            cnn_class_val = cnn_data.get("class")
+            cnn_prob_val = cnn_data.get("probability", 0.0)
+
+            is_rule_suspicious = (rule_verdict_val == "SUSPICIOUS")
+            is_cnn_suspicious = (
+                cnn_class_val == "modified"
+                and cnn_prob_val is not None
+                and cnn_prob_val >= CNN_CONFIDENCE_THRESHOLD
+            )
+
+            if is_rule_suspicious or is_cnn_suspicious:
+                combined_status = "Suspicious signals detected"
+            elif rule_verdict_val == "LIKELY_LEGITIMATE" and cnn_class_val == "original":
+                combined_status = "No suspicious signals detected"
+            else:
+                combined_status = "Insufficient evidence / unable to analyze reliably"
+
+        st.markdown(f"- **Status:** {combined_status}")
+        st.markdown(f"- *{contributed_str}*")
+        st.caption("Provisional combined signal — not a calibrated ensemble. Full ensemble scoring is planned for a later milestone.")
+
 else:
     if uploaded_file is None:
         st.info("Please upload a UPI payment screenshot above to preview and analyze.")
