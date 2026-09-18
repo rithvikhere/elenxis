@@ -29,9 +29,9 @@ The corresponding figure is `confusion_matrix.png`.
 
 | Image | True label | Prediction | Error type | Confidence | Possible reason |
 |---|---|---|---|---:|---|
-| img_049.png | original | modified | false_positive | 0.6554 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
-| img_053.png | original | modified | false_positive | 0.7137 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
-| img_057.png | original | modified | false_positive | 0.7771 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
+| img_049.png | original | modified | false_positive | 0.6614 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
+| img_053.png | original | modified | false_positive | 0.6434 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
+| img_057.png | original | modified | false_positive | 0.7403 | Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis. |
 
 The possible reasons are hypotheses based on the observed samples, not demonstrated causes. This CNN prediction and the associated image-forensics indicators are not proof that a financial transaction occurred or that fraud occurred.
 

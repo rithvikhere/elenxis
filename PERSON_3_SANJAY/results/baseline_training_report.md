@@ -4,8 +4,8 @@
 **Model Architecture**: ResNet-18 (ImageNet Pretrained Transfer Learning)  
 **Task**: Binary Classification (`0: original`, `1: modified`)  
 **Hardware Device**: `cpu`  
-**Elapsed Training Time**: `18.68 seconds`  
-**Best Checkpoint**: `C:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt`
+**Elapsed Training Time**: `19.59 seconds`  
+**Best Checkpoint**: `D:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt`
 
 ---
 
@@ -44,19 +44,19 @@
 
 | Epoch | Train Loss | Train Acc | Val Loss | Val Acc | Val Precision | Val Recall | Val F1 |
 |---|---|---|---|---|---|---|---|
-| 1 | 0.8249 | 30.6% | 0.6466 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 2 | 0.7013 | 58.3% | 0.5741 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 3 | 0.5991 | 75.0% | 0.5775 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 4 | 0.5696 | 75.0% | 0.5822 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 5 | 0.5731 | 72.2% | 0.5548 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 6 | 0.5901 | 75.0% | 0.5573 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 7 | 0.5676 | 75.0% | 0.5436 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 8 | 0.5964 | 75.0% | 0.5248 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 9 | 0.5652 | 72.2% | 0.5273 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 10 | 0.5503 | 75.0% | 0.5173 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 1 | 0.8250 | 30.6% | 0.6468 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 2 | 0.7010 | 58.3% | 0.5741 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 3 | 0.5988 | 75.0% | 0.5791 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 4 | 0.5685 | 75.0% | 0.5842 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 5 | 0.5737 | 72.2% | 0.5540 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 6 | 0.5868 | 75.0% | 0.5479 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 7 | 0.5691 | 75.0% | 0.5417 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 8 | 0.5980 | 77.8% | 0.5208 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 9 | 0.5438 | 72.2% | 0.5243 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 10 | 0.5427 | 75.0% | 0.5231 | 75.0% | 75.0% | 100.0% | 85.7% |
 
 ### Best Validation Performance (Epoch Selection by Lowest Val Loss)
-- **Best Validation Loss**: `0.5173`
+- **Best Validation Loss**: `0.5208`
 - **Validation Accuracy**: `0.75`
 - **Validation Precision**: `0.75`
 - **Validation Recall**: `1.0`
@@ -72,9 +72,9 @@
 ## 4. Empirical Overfitting & Generalization Observations
 
 1. **Train vs. Validation Loss Dynamics**:
-   - Final Training Loss: `0.5503`
-   - Final Validation Loss: `0.5173`
-   - Generalization Loss Gap: `0.0330`
+   - Final Training Loss: `0.5427`
+   - Final Validation Loss: `0.5231`
+   - Generalization Loss Gap: `0.0196`
 2. **Analysis**:
    - The validation loss decreased steadily alongside training loss without diverging or exhibiting rapid validation error spikes.
    - Dropout rate ($p=0.3$) and weight decay ($10^{-4}$) successfully provided regularization.
@@ -84,5 +84,5 @@
 
 ## 5. Artifacts Generated
 
-- **Best Model Weights**: [`PERSON_3_SANJAY/models/resnet18_baseline_best.pt`](file:///C:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt)
-- **Learning Curves Visual**: [`PERSON_3_SANJAY/results/learning_curves.png`](file:///C:\elenxis\PERSON_3_SANJAY\results\learning_curves.png)
+- **Best Model Weights**: [`PERSON_3_SANJAY/models/resnet18_baseline_best.pt`](file:///D:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt)
+- **Learning Curves Visual**: [`PERSON_3_SANJAY/results/learning_curves.png`](file:///D:\elenxis\PERSON_3_SANJAY\results\learning_curves.png)

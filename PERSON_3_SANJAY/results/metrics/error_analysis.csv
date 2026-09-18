@@ -1,4 +1,4 @@
 image,true_label,prediction,error_type,confidence,possible_reason
-img_049.png,original,modified,false_positive,0.655425,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
-img_053.png,original,modified,false_positive,0.713682,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
-img_057.png,original,modified,false_positive,0.77708,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
+img_049.png,original,modified,false_positive,0.661354,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
+img_053.png,original,modified,false_positive,0.6434,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
+img_057.png,original,modified,false_positive,0.74026,Possible reason: this original image may contain layout or compression features resembling signals learned for the modified class; this is a hypothesis.
