@@ -69,15 +69,50 @@ D:\elenxis/
   7. **Action Button & Empty States**: "Analyze Screenshot" button appears only upon valid upload, showing a placeholder notice. If no file is selected, a neutral `st.info` guide is displayed.
 
 ### Phase 4: Person 2 Integration (OCR + Rule Engine)
-- **Live Pipeline Execution**:
-  1. **OCR Ingestion**: Calls `extract_transaction_fields(temp_image_path)` to extract raw text, confidence score, and structured transaction dictionary.
-  2. **Rule Evaluation**: Passes OCR extraction into `validate_transaction(ocr_output)` to evaluate against 11 format, range, and temporal heuristic rules.
-  3. **OCR Extracted Fields Display**: Cleanly renders extracted transaction data: Amount, Date, Time, UTR (`transaction_id`), Template (`template_type`), and Recipient. Any missing or empty field strictly displays the literal string `"Not detected"`.
-  4. **Rule Validation Display**: Renders rule engine outcome:
-     - Verdict (`LIKELY_LEGITIMATE` / `SUSPICIOUS` / `UNREADABLE`)
-     - Anomaly/Suspicion Score (formatted to 2 decimal places, e.g. `0.27`)
-     - Heuristic Audit Explanations List (comprehensive itemized checklist of rule violations, warnings, and passed checks).
-  5. **Fault Isolation**: Both module calls are wrapped in robust exception handling logging tracebacks to `sys.stderr` while cleanly rendering `"Not available yet"` in the UI without crashing.
+- **Runtime Interface Contract & Discrepancy Resolution**:
+  During pre-flight verification, the real runtime objects returned by Person 2's completed modules were mapped against the integration specification:
+
+| Field / Feature | Documented Contract | Real Runtime Key | Handled in `app.py` |
+|---|---|---|---|
+| **OCR Payload** | Flat dict | Nested `ocr_output["fields"]` | Extracted safely from nested dictionary |
+| **UTR** | `"utr"` / `"UTR"` | **`"transaction_id"`** | `fields.get("transaction_id")` |
+| **Template Family** | `"template"` | **`"template_type"`** | `fields.get("template_type")` |
+| **Suspicion Score** | `"anomaly_score"` | **`"suspicion_score"`** | Formatted to 2 decimals (`0.00–1.00`) |
+| **Rule Explanations** | `"explanations"` (list) | `"violations"`, `"warnings"`, `"passed_checks"` | Aggregated into full heuristic audit checklist |
+| **Missing Values** | `None` / empty | `None` | Rendered explicitly as `"Not detected"` |
+
+- **Design Decision — Explanations Presentation**:
+  - Implemented **Option 2 (Full Heuristic Audit)**: Shows an itemized checklist of all 11 format, range, and temporal rule checks performed by Person 2 (violations, warnings, and passed checks). This guarantees 100% academic transparency during panel evaluation.
+  - Future refinement planned: Option C polish (executive NLP paragraph summary + anomaly bullets) for Phase 5.
+- **Defensive Error Handling**:
+  Both `extract_transaction_fields` and `validate_transaction` are wrapped in localized `try/except` guards. Any exception is logged to `sys.stderr` while displaying `"Not available yet"` in the UI without crashing the application.
+
+- **Sample UI Output (Valid Screenshot)**:
+  ```text
+  --- OCR Extracted Fields ---
+  - Amount: ₹1,335.95
+  - Date: 12 Dec 2025
+  - Time: 12:06 PM
+  - UTR: Transaction
+  - Template: PayLite
+  - Recipient: Not detected
+
+  --- Rule Validation ---
+  - Verdict: SUSPICIOUS
+  - Anomaly Score: 0.27
+  Rule Explanations:
+  - RULE-08 FAIL: UTR 'Transaction' contains non-numeric characters.
+  - RULE-09 FAIL: UTR has 0 digits; expected 12. Possible truncation or tamper.
+  - RULE-11 WARN: Recipient name could not be extracted.
+  - RULE-01 PASS: Amount field present.
+  - RULE-02 PASS: Amount ₹1,335.95 is positive.
+  - RULE-03 PASS: Amount ₹1,335.95 is within plausible UPI range.
+  - RULE-04 PASS: Date field present.
+  - RULE-05 PASS: Transaction date 2025-12-12 is not in the future.
+  - RULE-06 PASS: Date age 0.8 years is within 5-year window.
+  - RULE-07 PASS: UTR field present.
+  - RULE-10 PASS: Status 'Paid Successfully' is a valid success indicator.
+  ```
 
 ---
 
