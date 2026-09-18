@@ -129,6 +129,20 @@ D:\elenxis/
 | **5** | Missing Model Checkpoint | Simulated missing `resnet18_baseline_best.pt` | CNN & Grad-CAM show `"Not available yet"`; Combined status falls back to Insufficient Evidence | Handled cleanly; checkpoint restored | **PASS** |
 | **6** | No File Selected | Fresh page load / unsubmitted state | "Analyze Screenshot" button is unreachable; neutral info prompt displayed | Handled cleanly; 0 crashes | **PASS** |
 
+### Phase 8: Standing Disclaimer & Academic Integrity Display
+- **Always-Visible Standing Disclaimer**:
+  - Mounted directly under the page header/caption across all three UI states (no file uploaded, file uploaded before analysis, and after analysis).
+  - Exact verbatim wording:
+    > *"This tool analyzes screenshot authenticity signals. It does not verify whether a bank transaction occurred. Confirm payment through the official payment app or bank account."*
+- **Academic Integrity & Synthetic Data Footer**:
+  - Unconditionally rendered at the bottom of the page (`About & Academic Integrity`) across all application states.
+  - Documents that all sample and demonstration data is synthetic and used strictly for academic research.
+  - References the visible **`DEMO / SYNTHETIC UPI RECEIPT`** watermark embedded across Person 2's dataset receipts.
+- **Subsystem Benchmark Metrics (Cited Exactly from Source Documentation)**:
+  - **OCR:** `100% extraction/field accuracy on test split`
+  - **Rule engine:** `93.9% precision / 68.9% recall overall`
+  - **CNN:** `0.75 accuracy / 1.00 recall on a 12-image held-out set`
+
 ---
 
 ## 🧪 Testing & Verification
@@ -151,6 +165,22 @@ py -m pytest PERSON_1_RITHVIK\test_app.py -v
 | `test_corrupted_file_upload` | Uploading non-image/corrupted file | `st.error` displayed, no preview, no button, no crash | **PASSED** |
 | `test_file_removal` | Uploading then clicking remove (`✕`) | Clean reset to empty neutral state without errors | **PASSED** |
 
+### Phase 7 & 8 Test Suites
+
+```powershell
+# Phase 7: Error handling & fault isolation test suite (6 edge cases)
+py -m pytest PERSON_1_RITHVIK\test_phase7_error_handling.py -v
+
+# Phase 8: Standing disclaimer & integrity display verification across all 3 page states
+py -m pytest PERSON_1_RITHVIK\test_phase8_disclaimer.py -v
+```
+
+| Phase 8 Test | Scenario | Verified Elements | Result |
+|---|---|---|:---:|
+| `test_state_1_no_file_uploaded` | State 1: Fresh page load | Disclaimer banner, watermark note, synthetic statement, 3 metrics, neutral upload prompt | **PASSED** |
+| `test_state_2_file_uploaded_not_analyzed` | State 2: File uploaded, preview shown | Disclaimer banner, preview, analyze button, watermark note, synthetic statement, 3 metrics | **PASSED** |
+| `test_state_3_after_full_analysis` | State 3: After analysis execution | Disclaimer banner, OCR, rules, CNN, forensics, Grad-CAM, combined status, watermark note, 3 metrics | **PASSED** |
+
 ---
 
 ## 🏃 How to Run Locally
@@ -162,7 +192,7 @@ py -m streamlit run app.py
 ```
 Access the application in your browser at `http://localhost:8501`.
 
-### 2. Run Subsystem Unit Tests
+### 2. Run All Tests
 ```powershell
-py -m pytest PERSON_1_RITHVIK\test_app.py -v
+py -m pytest PERSON_1_RITHVIK/ -v
 ```

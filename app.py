@@ -34,6 +34,11 @@ st.set_page_config(
 st.title("UPI Fraud Forensics")
 st.caption("Screenshot-based forensic analysis for detecting potential manipulation indicators.")
 
+# Standing Disclaimer (Always visible on every page state)
+st.warning(
+    "This tool analyzes screenshot authenticity signals. It does not verify whether a bank transaction occurred. Confirm payment through the official payment app or bank account."
+)
+
 # Directory for saving uploaded images temporarily for downstream forensic modules
 TEMP_DIR = pathlib.Path("PERSON_1_RITHVIK/temp")
 TEMP_DIR.mkdir(parents=True, exist_ok=True)
@@ -345,3 +350,17 @@ if valid_image is not None and temp_image_path is not None:
 else:
     if uploaded_file is None:
         st.info("Please upload a UPI payment screenshot above to preview and analyze.")
+
+# =============================================================================
+# 8. Footer & Academic Integrity Display (Phase 8)
+# =============================================================================
+st.divider()
+st.subheader("About & Academic Integrity")
+st.markdown(
+    "All demo and sample data in this platform is synthetic and used for academic purposes only. "
+    "Dataset images from Person 2 carry a visible **`DEMO / SYNTHETIC UPI RECEIPT`** watermark."
+)
+st.markdown("**Subsystem Benchmark Metrics:**")
+st.markdown("- **OCR:** 100% extraction/field accuracy on test split")
+st.markdown("- **Rule engine:** 93.9% precision / 68.9% recall overall")
+st.markdown("- **CNN:** 0.75 accuracy / 1.00 recall on a 12-image held-out set")
