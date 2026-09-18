@@ -46,3 +46,7 @@ htmlcov/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Temp upload files
+PERSON_1_RITHVIK/temp/*
+!PERSON_1_RITHVIK/temp/.gitkeep
