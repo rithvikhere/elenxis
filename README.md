@@ -149,3 +149,15 @@ python scripts/evaluate_ocr_rules.py
 - [OCR Extraction Pipeline & Error Analysis](file:///Users/nivash/elenxis/PERSON_2_NIVASH/docs/ocr.md)
 - [Rule Engine Catalogue & Scoring Formulation](file:///Users/nivash/elenxis/PERSON_2_NIVASH/docs/rules.md)
 - [Person 2 Quickstart Guide](file:///Users/nivash/elenxis/PERSON_2_NIVASH/README.md)
+
+---
+
+## 🔄 Recent Modifications & Fixes
+- **Amount OCR Accuracy Fix**:
+  - In `PERSON_2_NIVASH/src/ocr/extractor.py`, prioritized un-degraded `raw` OCR before contrast boost fallback.
+  - Prevents high contrast enhancement from merging adjacent UI icons/badges into currency figures (e.g. eliminating ₹100 being misread as ₹1000).
+- **Manipulation Detection & Overall Verdict Clarity**:
+  - In `app.py`, added a prominent Executive Forensic Status Banner rendered at the top of results.
+  - Lowered `CNN_CONFIDENCE_THRESHOLD = 0.50` to guarantee that visual tamper predictions (`class == "modified"`) are captured and flagged as suspicious.
+  - Added descriptive captions clarifying the scope of Rule Validation (syntax/formatting check only) vs. CNN/Forensics (visual tampering check).
+

@@ -124,3 +124,12 @@ python -m src.benchmark_master
 - **Zero Sensitive Data**: No real bank accounts, real UTRs, phone numbers, or private financial ledgers.
 - **Mandatory Watermark**: `DEMO / SYNTHETIC UPI RECEIPT - ACADEMIC RESEARCH ONLY` on every generated asset.
 - **Detector Purpose Only**: Designed solely to train and evaluate fraud forensics detectors; not intended to produce usable payment evidence.
+
+---
+
+## 🔄 Recent Modifications & Updates
+- **OCR Amount Extraction Enhancement (`src/ocr/extractor.py`)**:
+  - Prioritized `raw` image OCR before falling back to contrast enhancement.
+  - Fixes text boundary bleed and icon-merging distortion on digital screenshots where circular success icons or checkmark graphics are placed near the amount digits (e.g. preventing ₹100 from being misread as ₹1000).
+  - Preserves full backward-compatible contrast boost fallback for low-contrast/scanned receipts.
+

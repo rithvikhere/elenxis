@@ -56,23 +56,41 @@ def extract_transaction_fields(
     path_str = str(image_input) if not isinstance(image_input, Image.Image) else "PIL Image"
 
     try:
-        preprocessed = preprocess_image(image_input, method=preprocess_mode)
+        # Prefer raw mode first to avoid contrast-induced symbol distortion
+        # (e.g. 2x contrast merging circular icons next to digits, turning ₹100 into 1000)
+        if preprocess_mode == "contrast":
+            raw_img = preprocess_image(image_input, method="raw")
+            raw_text_try = pytesseract.image_to_string(raw_img, config=tesseract_config)
+            raw_fields = parse_all_fields(raw_text_try)
+            if raw_fields.get("amount") and raw_fields.get("date"):
+                preprocessed = raw_img
+                raw_text = raw_text_try
+                fields = raw_fields
+                preprocess_mode_used = "raw"
+            else:
+                preprocessed = preprocess_image(image_input, method="contrast")
+                raw_text = pytesseract.image_to_string(preprocessed, config=tesseract_config)
+                fields = parse_all_fields(raw_text)
+                preprocess_mode_used = "contrast"
+        else:
+            preprocessed = preprocess_image(image_input, method=preprocess_mode)
+            raw_text = pytesseract.image_to_string(preprocessed, config=tesseract_config)
+            fields = parse_all_fields(raw_text)
+            preprocess_mode_used = preprocess_mode
 
-        raw_text = pytesseract.image_to_string(preprocessed, config=tesseract_config)
         tsv = pytesseract.image_to_data(
             preprocessed, config=tesseract_config,
             output_type=pytesseract.Output.DICT,
         )
         confidence = _mean_confidence(tsv)
 
-        fields = parse_all_fields(raw_text)
         raw_text_out = fields.pop("raw_text", raw_text)
 
         return {
             "fields": fields,
             "raw_text": raw_text_out,
             "mean_confidence": confidence,
-            "preprocess_mode": preprocess_mode,
+            "preprocess_mode": preprocess_mode_used,
             "image_path": path_str,
             "success": bool(fields.get("amount") or fields.get("date")),
             "error": None,

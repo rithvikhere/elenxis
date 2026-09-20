@@ -62,3 +62,12 @@ Phase 6 implements the **Transaction Field Parser & Semantic Normalizer** (`src/
 cd PERSON_2_NIVASH
 pytest tests/test_field_parser.py -v
 ```
+
+---
+
+## 🔄 Recent Modifications & Enhancements
+- **Priority-Based Clean OCR Extraction (`src/ocr/extractor.py`)**:
+  - **Issue Resolved**: When processing real-world high-resolution UPI screenshots, aggressive contrast boosting (`enhance_contrast(factor=2.0)`) caused nearby graphic elements (such as circular payment status badges or checkmark icons) to bleed into the numeric amount bounding box, resulting in false extra trailing digits (e.g. ₹100 misread as ₹1000).
+  - **Resolution**: Updated `extract_transaction_fields` to try un-degraded `raw` mode first. If clean transaction fields are detected, they are used directly with high confidence. Contrast enhancement is retained as a robust automatic fallback for faint or low-contrast receipt scans.
+  - **Verification**: Tested on clean mobile screenshots and unit tests; all 27 tests in `tests/test_field_parser.py` passing.
+

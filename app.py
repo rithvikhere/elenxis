@@ -171,13 +171,81 @@ if valid_image is not None and temp_image_path is not None:
     if st.session_state.get("analyzed_file") == uploaded_file.name:
         st.divider()
 
+        # Pre-compute Phase 6 Combined Assessment for executive banner & Section 6
+        rule_data = st.session_state.get("rule_verdict")
+        cnn_data = st.session_state.get("cnn_output")
+        ocr_data = st.session_state.get("ocr_output")
+        forensics_data = st.session_state.get("forensics_output")
+        gradcam_data = st.session_state.get("gradcam_output")
+
+        # Threshold for CNN confidence: probability >= 0.50
+        CNN_CONFIDENCE_THRESHOLD = 0.50
+
+        rule_available = (
+            rule_data is not None
+            and isinstance(rule_data, dict)
+            and rule_data.get("verdict") in ("SUSPICIOUS", "LIKELY_LEGITIMATE")
+        )
+        cnn_available = (
+            cnn_data is not None
+            and isinstance(cnn_data, dict)
+            and cnn_data.get("status") == "success"
+            and cnn_data.get("class") in ("modified", "original")
+        )
+
+        if rule_available and cnn_available:
+            contributed_str = "Based on: rule engine, CNN"
+        elif rule_available and not cnn_available:
+            contributed_str = "Based on: rule engine only — CNN unavailable"
+        elif not rule_available and cnn_available:
+            contributed_str = "Based on: CNN only — rule engine unavailable"
+        else:
+            contributed_str = "Based on: none available."
+
+        is_rule_suspicious = False
+        is_cnn_suspicious = False
+        cnn_prob_val = 0.0
+
+        if not (rule_available and cnn_available):
+            combined_status = "Insufficient evidence / unable to analyze reliably"
+        else:
+            rule_verdict_val = rule_data.get("verdict")
+            cnn_class_val = cnn_data.get("class")
+            cnn_prob_val = cnn_data.get("probability", 0.0) or 0.0
+
+            is_rule_suspicious = (rule_verdict_val == "SUSPICIOUS")
+            is_cnn_suspicious = (
+                cnn_class_val == "modified"
+                and cnn_prob_val >= CNN_CONFIDENCE_THRESHOLD
+            )
+
+            if is_rule_suspicious or is_cnn_suspicious:
+                combined_status = "Suspicious signals detected"
+            elif rule_verdict_val == "LIKELY_LEGITIMATE" and cnn_class_val == "original":
+                combined_status = "No suspicious signals detected"
+            else:
+                combined_status = "Insufficient evidence / unable to analyze reliably"
+
+        # Executive status banner at the top of results
+        if combined_status == "Suspicious signals detected":
+            reasons = []
+            if is_rule_suspicious:
+                reasons.append("rule engine flagged text inconsistencies")
+            if is_cnn_suspicious:
+                reasons.append(f"CNN visual classifier flagged digital tampering ({cnn_prob_val * 100:.1f}% confidence)")
+            reasons_str = f" ({'; '.join(reasons)})" if reasons else ""
+            st.warning(f"⚠️ **Overall Forensic Status: Suspicious signals detected**{reasons_str}. Detailed evidence is provided below.")
+        elif combined_status == "No suspicious signals detected":
+            st.success("✅ **Overall Forensic Status: No suspicious signals detected** — Text syntax and baseline visual checks passed.")
+        else:
+            st.info("ℹ️ **Overall Forensic Status: Insufficient evidence / inconclusive** — Could not verify across all required subsystems.")
+
         # =========================================================================
         # PHASE 4: PERSON 2 MODULES (OCR + RULES)
         # =========================================================================
 
         # Section 1: OCR Extracted Fields
         st.subheader("OCR Extracted Fields")
-        ocr_data = st.session_state.get("ocr_output")
         if ocr_data is not None and isinstance(ocr_data, dict):
             fields = ocr_data.get("fields", {})
             st.markdown(f"- **Amount:** {format_field_value(fields.get('amount'))}")
@@ -191,13 +259,15 @@ if valid_image is not None and temp_image_path is not None:
 
         # Section 2: Rule Validation
         st.subheader("Rule Validation")
-        rule_data = st.session_state.get("rule_verdict")
+        st.caption("Validates consistency of extracted text fields (e.g. UTR format, date syntax). Note: Syntactically valid text does not rule out visual tampering.")
         if rule_data is not None and isinstance(rule_data, dict):
             verdict = rule_data.get("verdict", "Not detected")
             score = rule_data.get("suspicion_score")
             score_formatted = f"{score:.2f}" if isinstance(score, (int, float)) else "Not detected"
 
             st.markdown(f"- **Verdict:** {verdict}")
+            if verdict == "LIKELY_LEGITIMATE":
+                st.caption("ℹ️ *Text fields match expected syntax (evaluates OCR text logic only — visual tampering is evaluated by the CNN & ELA modules).*")
             st.markdown(f"- **Anomaly Score:** {score_formatted}")
             st.markdown("**Rule Explanations:**")
 
@@ -299,54 +369,6 @@ if valid_image is not None and temp_image_path is not None:
         # =========================================================================
         st.divider()
         st.subheader("Combined Assessment")
-
-        # Hardcoded threshold for meaningfully high CNN confidence: probability >= 0.70
-        CNN_CONFIDENCE_THRESHOLD = 0.70
-
-        # Assess module availability from Phase 4 and Phase 5 outputs
-        rule_available = (
-            rule_data is not None
-            and isinstance(rule_data, dict)
-            and rule_data.get("verdict") in ("SUSPICIOUS", "LIKELY_LEGITIMATE")
-        )
-        cnn_available = (
-            cnn_data is not None
-            and isinstance(cnn_data, dict)
-            and cnn_data.get("status") == "success"
-            and cnn_data.get("class") in ("modified", "original")
-        )
-
-        # Derive dynamic contribution descriptor
-        if rule_available and cnn_available:
-            contributed_str = "Based on: rule engine, CNN"
-        elif rule_available and not cnn_available:
-            contributed_str = "Based on: rule engine only — CNN unavailable"
-        elif not rule_available and cnn_available:
-            contributed_str = "Based on: CNN only — rule engine unavailable"
-        else:
-            contributed_str = "Based on: none available."
-
-        # Compute combined status using strictly specified three-state logic
-        if not (rule_available and cnn_available):
-            combined_status = "Insufficient evidence / unable to analyze reliably"
-        else:
-            rule_verdict_val = rule_data.get("verdict")
-            cnn_class_val = cnn_data.get("class")
-            cnn_prob_val = cnn_data.get("probability", 0.0)
-
-            is_rule_suspicious = (rule_verdict_val == "SUSPICIOUS")
-            is_cnn_suspicious = (
-                cnn_class_val == "modified"
-                and cnn_prob_val is not None
-                and cnn_prob_val >= CNN_CONFIDENCE_THRESHOLD
-            )
-
-            if is_rule_suspicious or is_cnn_suspicious:
-                combined_status = "Suspicious signals detected"
-            elif rule_verdict_val == "LIKELY_LEGITIMATE" and cnn_class_val == "original":
-                combined_status = "No suspicious signals detected"
-            else:
-                combined_status = "Insufficient evidence / unable to analyze reliably"
 
         st.markdown(f"- **Status:** {combined_status}")
         st.markdown(f"- *{contributed_str}*")

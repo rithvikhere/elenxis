@@ -106,11 +106,14 @@ D:\elenxis/
 ### Phase 6: Lightweight Combined Assessment (Provisional)
 - **Combination Logic & Decision Rule**:
   Combines the existing Phase 4 (Rule Verdict) and Phase 5 (CNN Prediction) outputs into a transparent, honest overall status:
-  - **Threshold**: Hardcoded CNN confidence threshold `CNN_CONFIDENCE_THRESHOLD = 0.70` (`p >= 0.70`).
-  - **Condition 1 (Suspicious)**: If `rule_verdict == "SUSPICIOUS"` OR `CNN predicts "modified"` with `p >= 0.70` &rarr; displays **`"Suspicious signals detected"`**.
+  - **Threshold**: CNN confidence threshold `CNN_CONFIDENCE_THRESHOLD = 0.50` (`p >= 0.50`), ensuring any positive classification of digital manipulation by the visual model is captured.
+  - **Condition 1 (Suspicious)**: If `rule_verdict == "SUSPICIOUS"` OR `CNN predicts "modified"` with `p >= 0.50` &rarr; displays **`"Suspicious signals detected"`**.
   - **Condition 2 (Clean)**: If `rule_verdict == "LIKELY_LEGITIMATE"` AND `CNN predicts "original"` &rarr; displays **`"No suspicious signals detected"`**.
   - **Condition 3 (Fallback)**: If either module is unavailable or failed &rarr; displays **`"Insufficient evidence / unable to analyze reliably"`**.
   - **Strict Status Contract**: The output is guaranteed to be strictly one of these three strings. Forbidden speculative words such as `"FAKE"` or `"FRAUD"` are never produced.
+- **Top-Level Executive Status Banner**:
+  - The Combined Assessment is pre-computed and rendered as a high-visibility alert banner immediately above the detailed evidence sections so that users never miss the holistic verdict.
+  - Accompanied by descriptive rule validation captions clarifying that the Rule Engine evaluates text syntax only, while the CNN evaluates visual tampering.
 - **Dynamic Module Attribution**:
   Directly displays which modules contributed (e.g. `*Based on: rule engine, CNN*` or `*Based on: rule engine only — CNN unavailable*`). If both fail, safely displays `*Based on: none available.*` with zero crashes.
 - **Academic Disclaimer**:
@@ -196,3 +199,15 @@ Access the application in your browser at `http://localhost:8501`.
 ```powershell
 py -m pytest PERSON_1_RITHVIK/ -v
 ```
+
+---
+
+## 🔄 Recent Modifications & Updates
+- **Executive Forensic Status Banner (`app.py`)**:
+  - Pre-computes Phase 6 multi-modal evaluation upon analysis and places a high-visibility alert banner (`st.warning`, `st.success`, `st.info`) at the very top of the results.
+  - Fixes user confusion where an edited screenshot displayed an apparent "Likely Legitimate" verdict due to viewing text-only rule checks in Section 2.
+- **Tuned CNN Tamper Decision Threshold (`app.py`)**:
+  - Adjusted `CNN_CONFIDENCE_THRESHOLD = 0.50` (lowered from 0.70) so that whenever the ResNet-18 model predicts `class == "modified"`, the platform reliably flags suspicious signals.
+- **Subsystem Scope Disclaimers (`app.py`)**:
+  - Added descriptive captions to Section 2 (Rule Validation) explicitly clarifying that it verifies OCR text syntax/formatting only, and that visual tampering is analyzed by the visual CNN and forensics models.
+
