@@ -16,36 +16,66 @@ from typing import Any, Dict, Optional, Tuple
 
 def parse_amount(text: str) -> Tuple[Optional[str], Optional[float]]:
     """
-    Extracts transaction amount. Handles ₹/%/*/t OCR misreads and
-    comma-separated thousands (₹1,200.00).
+    Extracts transaction amount. Handles ₹/%/*/t OCR misreads,
+    comma-separated thousands (₹1,200.00 or ₹1,200), whole integer amounts
+    (e.g. 1000, 500), and contextual prefixes (Amount: 1000).
 
     Returns: (formatted "₹450.00", float 450.0) or (None, None)
     """
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     candidates: list = []
 
-    # Strategy 1 — currency-prefixed (₹, %, *, t, Rs., INR)
+    # Strategy 1 — currency-prefixed (₹, %, *, t, F, Rs., INR) with or without decimals
     for line in lines:
         m = re.search(
-            r'([₹%*tF]|Rs\.?|INR)\s*([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}|[0-9]+\.[0-9]{2})',
+            r'([₹%*tF]|Rs\.?|INR)\s*(?<!\d)([0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)(?!\d)',
             line, re.IGNORECASE
         )
         if m:
+            num_str = m.group(2).replace(',', '')
             try:
-                val = float(m.group(2).replace(',', ''))
+                val = float(num_str)
                 if 0.5 <= val <= 1_000_000:
-                    candidates.append((val, f"₹{val:,.2f}", 10))
+                    weight = 12 if '.' in num_str else 10
+                    candidates.append((val, f"₹{val:,.2f}", weight))
             except ValueError:
                 pass
 
-    # Strategy 2 — standalone decimal line ("85.50", "1,200.00")
+    # Strategy 2 — contextual prefix (Amount, Paid, Payment of, Total)
     for line in lines:
-        m = re.fullmatch(r'([0-9]{1,3}(?:,[0-9]{3})*\.[0-9]{2}|[0-9]+\.[0-9]{2})', line)
+        m = re.search(
+            r'(?:Amount|Paid|Payment(?:\s*of)?|Total)\s*[:\-]?\s*([₹%*tF]|Rs\.?|INR)?\s*(?<!\d)([0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)(?!\d)',
+            line, re.IGNORECASE
+        )
         if m:
+            num_str = m.group(2).replace(',', '')
             try:
-                val = float(m.group(1).replace(',', ''))
+                val = float(num_str)
                 if 0.5 <= val <= 1_000_000:
-                    candidates.append((val, f"₹{val:,.2f}", 5))
+                    weight = 11 if '.' in num_str else 9
+                    candidates.append((val, f"₹{val:,.2f}", weight))
+            except ValueError:
+                pass
+
+    # Strategy 3 — standalone line with optional currency symbol and optional decimals
+    for line in lines:
+        cleaned = re.sub(r'[\s@#*~|<]+', ' ', line).strip()
+        m = re.fullmatch(
+            r'([₹%*tF]|Rs\.?|INR)?\s*([0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]{1,2})?|[0-9]+(?:\.[0-9]{1,2})?)',
+            cleaned, re.IGNORECASE
+        )
+        if m:
+            num_str = m.group(2).replace(',', '')
+            try:
+                val = float(num_str)
+                # Exclude 4-digit years (e.g. 2020-2035) if year appears in other lines
+                if val in range(2020, 2036) and any(str(int(val)) in l for l in lines if l != line):
+                    continue
+                if 0.5 <= val <= 1_000_000 and len(num_str.split('.')[0]) <= 7:
+                    has_curr = bool(m.group(1))
+                    has_dec = '.' in num_str
+                    weight = 8 if has_curr else (6 if has_dec else 5)
+                    candidates.append((val, f"₹{val:,.2f}", weight))
             except ValueError:
                 pass
 

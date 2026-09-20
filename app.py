@@ -105,6 +105,11 @@ if valid_image is not None and temp_image_path is not None:
         try:
             from src.ocr import extract_transaction_fields
             ocr_res = extract_transaction_fields(temp_image_path)
+            # If contrast mode failed to extract core fields, try raw preprocessing fallback
+            if ocr_res is not None and not ocr_res.get("success"):
+                fallback_res = extract_transaction_fields(temp_image_path, preprocess_mode="raw")
+                if fallback_res.get("success"):
+                    ocr_res = fallback_res
         except Exception as exc:
             print(f"[Error] OCR extraction failed: {exc}", file=sys.stderr)
             traceback.print_exc()
