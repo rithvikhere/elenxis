@@ -1,6 +1,16 @@
 import pathlib
+import logging
+import warnings
 from unittest.mock import patch
+from streamlit import logger as st_logger
+import streamlit.runtime.scriptrunner_utils.script_run_context as st_context
 from streamlit.testing.v1 import AppTest
+
+# Suppress Streamlit runtime warnings and ResourceWarnings during test runs
+st_logger.set_log_level("ERROR")
+st_context._LOGGER.disabled = True
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def test_initial_state():
     """Test 1: No file uploaded, page just loaded."""

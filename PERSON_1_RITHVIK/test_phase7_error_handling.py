@@ -1,9 +1,19 @@
 import io
 import os
 import pathlib
+import logging
+import warnings
 import pytest
 from PIL import Image
+from streamlit import logger as st_logger
+import streamlit.runtime.scriptrunner_utils.script_run_context as st_context
 from streamlit.testing.v1 import AppTest
+
+# Suppress Streamlit runtime warnings and ResourceWarnings during test runs
+st_logger.set_log_level("ERROR")
+st_context._LOGGER.disabled = True
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 def test_case_1_non_image_file():
     """Case 1: Non-image file renamed to .png (text bytes)."""

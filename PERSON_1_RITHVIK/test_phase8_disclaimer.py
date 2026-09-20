@@ -1,5 +1,15 @@
 import pathlib
+import logging
+import warnings
+from streamlit import logger as st_logger
+import streamlit.runtime.scriptrunner_utils.script_run_context as st_context
 from streamlit.testing.v1 import AppTest
+
+# Suppress Streamlit runtime warnings and ResourceWarnings during test runs
+st_logger.set_log_level("ERROR")
+st_context._LOGGER.disabled = True
+warnings.filterwarnings("ignore", category=ResourceWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
 
 DISCLAIMER_EXACT = (
     "This tool analyzes screenshot authenticity signals. It does not verify whether "
@@ -14,9 +24,9 @@ METRIC_CNN = "**CNN:** 0.75 accuracy / 1.00 recall on a 12-image held-out set"
 
 def assert_phase8_elements(at: AppTest):
     """Verify that standing disclaimer and footer elements are present and unparaphrased."""
-    # 1. Standing disclaimer must be present in warnings
-    all_warnings = " ".join(w.value for w in at.warning)
-    assert DISCLAIMER_EXACT in all_warnings, "Exact standing disclaimer not found in st.warning"
+    # 1. Standing disclaimer must be present (in info or warning)
+    all_disclaimers = " ".join(w.value for w in at.info) + " " + " ".join(w.value for w in at.warning)
+    assert DISCLAIMER_EXACT in all_disclaimers, "Exact standing disclaimer not found in st.info or st.warning"
 
     # 2. About & Academic Integrity subheader must be present
     all_subheaders = [sh.value for sh in at.subheader]

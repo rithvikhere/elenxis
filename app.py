@@ -13,8 +13,8 @@ try:
         tesseract_default = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
         if os.path.exists(tesseract_default):
             pytesseract.pytesseract.tesseract_cmd = tesseract_default
-except Exception as t_err:
-    print(f"[Warning] Tesseract init: {t_err}", file=sys.stderr)
+except Exception:
+    pass
 
 # Ensure repository root and subsystem folders are on sys.path for importing modules
 REPO_ROOT = pathlib.Path(__file__).resolve().parent
@@ -35,7 +35,7 @@ st.title("UPI Fraud Forensics")
 st.caption("Screenshot-based forensic analysis for detecting potential manipulation indicators.")
 
 # Standing Disclaimer (Always visible on every page state)
-st.warning(
+st.info(
     "This tool analyzes screenshot authenticity signals. It does not verify whether a bank transaction occurred. Confirm payment through the official payment app or bank account."
 )
 
@@ -149,7 +149,7 @@ if valid_image is not None and temp_image_path is not None:
                     output_dir=str(TEMP_DIR)
                 )
             else:
-                print("[Warning] CNN weights not found for Grad-CAM.", file=sys.stderr)
+                gradcam_res = {"status": "error", "error": "CNN weights not found for Grad-CAM"}
         except Exception as exc:
             print(f"[Error] Grad-CAM generation failed: {exc}", file=sys.stderr)
             traceback.print_exc()
