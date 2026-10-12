@@ -97,6 +97,43 @@ class TestUtrValidators:
         assert ok is False
 
 
+class TestStatusValidators:
+    def test_payment_completed_passes(self):
+        ok, msg = check_status_present("Payment Completed")
+        assert ok is True
+        assert "RULE-10 PASS" in msg
+
+    def test_paid_successfully_passes(self):
+        ok, msg = check_status_present("Paid Successfully")
+        assert ok is True
+        assert "RULE-10 PASS" in msg
+
+    def test_case_insensitive_success(self):
+        ok, msg = check_status_present("completed")
+        assert ok is True
+        assert "RULE-10 PASS" in msg
+
+    def test_unknown_fails(self):
+        ok, msg = check_status_present("Unknown")
+        assert ok is False
+        assert "RULE-10 FAIL" in msg
+
+    def test_none_fails(self):
+        ok, msg = check_status_present(None)
+        assert ok is False
+        assert "RULE-10 FAIL" in msg
+
+    def test_invalid_status_warns(self):
+        ok, msg = check_status_present("Unrecognized Text")
+        assert ok is False
+        assert "RULE-10 WARN" in msg
+
+    def test_pending_status_fails(self):
+        ok, msg = check_status_present("Pending Verification")
+        assert ok is False
+        assert "RULE-10 FAIL" in msg
+
+
 # ---------------------------------------------------------------------------
 # Integration Tests on Dataset Images
 # ---------------------------------------------------------------------------

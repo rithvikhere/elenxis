@@ -148,13 +148,35 @@ def check_utr_length(utr: Optional[str], expected: int = _STANDARD_UTR_LENGTH) -
 
 def check_status_present(status: Optional[str]) -> Tuple[bool, str]:
     """RULE-10: Receipt must carry a recognisable payment success status."""
-    valid = {"Paid Successfully", "Transaction Successful", "Payment Confirmed",
-             "COMPLETED", "SUCCESS"}
-    if not status or status == "Unknown":
+    if not status or not str(status).strip() or str(status).strip().lower() == "unknown":
         return False, "RULE-10 FAIL: Payment status is missing or unrecognised."
-    if status not in valid:
-        return False, f"RULE-10 WARN: Status '{status}' is not a standard success indicator."
-    return True, f"RULE-10 PASS: Status '{status}' is a valid success indicator."
+
+    s_raw = str(status).strip()
+    s_clean = re.sub(r"[^a-zA-Z\s]", " ", s_raw).strip().lower()
+
+    # Explicit failure or pending indicators
+    negative_indicators = {"failed", "declined", "cancelled", "pending", "reversed", "unsuccessful", "failure"}
+    tokens = set(s_clean.split())
+    if tokens & negative_indicators:
+        return False, f"RULE-10 FAIL: Payment status indicates failure or pending: '{s_raw}'."
+
+    # Standard positive success indicators in Indian UPI apps (Google Pay, PhonePe, Paytm, BHIM)
+    positive_phrases = [
+        "payment completed",
+        "paid successfully",
+        "transaction successful",
+        "payment confirmed",
+        "payment successful",
+        "completed",
+        "successful",
+        "success",
+        "paid",
+        "confirmed",
+    ]
+    if any(pos in s_clean for pos in positive_phrases):
+        return True, f"RULE-10 PASS: Status '{s_raw}' is a valid success indicator."
+
+    return False, f"RULE-10 WARN: Status '{s_raw}' is not a standard success indicator."
 
 
 def check_recipient_present(recipient: Optional[str]) -> Tuple[bool, str]:
