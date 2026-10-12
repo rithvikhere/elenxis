@@ -38,10 +38,17 @@ htmlcov/
 *.h5
 
 # Generated bulk dataset images (reproducible via scripts; sample images kept in docs/samples/)
-**/data/raw/*.png
-**/data/raw/*.jpg
-**/data/processed/*.png
-**/data/processed/*.jpg
+**/data/raw/*
+!**/data/raw/.gitkeep
+**/data/processed/*
+!**/data/processed/.gitkeep
+
+# Real user screenshots & private data (strictly local, never committed)
+**/data/real_raw/
+**/data/real_processed/
+**/data/splits_real/
+**/data/real_metadata.csv
+**/data/real_ground_truth.csv
 
 # OS files
 .DS_Store

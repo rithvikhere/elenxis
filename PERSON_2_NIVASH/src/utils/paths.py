@@ -17,6 +17,13 @@ PROCESSED_DIR = DATA_DIR / "processed"
 SPLITS_DIR = DATA_DIR / "splits"
 METADATA_CSV = DATA_DIR / "metadata.csv"
 
+# Real Data Directories (Private & Local)
+REAL_RAW_DIR = DATA_DIR / "real_raw"
+REAL_PROCESSED_DIR = DATA_DIR / "real_processed"
+REAL_SPLITS_DIR = DATA_DIR / "splits_real"
+REAL_METADATA_CSV = DATA_DIR / "real_metadata.csv"
+REAL_GROUND_TRUTH_CSV = DATA_DIR / "real_ground_truth.csv"
+
 # Documentation & Tests
 DOCS_DIR = PROJECT_ROOT / "docs"
 TESTS_DIR = PROJECT_ROOT / "tests"
