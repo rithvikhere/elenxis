@@ -4,8 +4,8 @@
 **Model Architecture**: ResNet-18 (ImageNet Pretrained Transfer Learning)  
 **Task**: Binary Classification (`0: original`, `1: modified`)  
 **Hardware Device**: `cpu`  
-**Elapsed Training Time**: `19.59 seconds`  
-**Best Checkpoint**: `D:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt`
+**Elapsed Training Time**: `9.05 seconds`  
+**Best Checkpoint**: `/Users/nivash/elenxis/PERSON_3_SANJAY/models/resnet18_baseline_best.pt`
 
 ---
 
@@ -27,12 +27,12 @@
 ```json
 {
   "seed": 42,
-  "epochs": 10,
+  "epochs": 1,
   "batch_size": 8,
   "learning_rate": 0.0001,
   "weight_decay": 0.0001,
   "dropout_rate": 0.3,
-  "pretrained": true,
+  "pretrained": false,
   "freeze_backbone": false,
   "model_name": "resnet18_baseline"
 }
@@ -44,37 +44,28 @@
 
 | Epoch | Train Loss | Train Acc | Val Loss | Val Acc | Val Precision | Val Recall | Val F1 |
 |---|---|---|---|---|---|---|---|
-| 1 | 0.8250 | 30.6% | 0.6468 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 2 | 0.7010 | 58.3% | 0.5741 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 3 | 0.5988 | 75.0% | 0.5791 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 4 | 0.5685 | 75.0% | 0.5842 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 5 | 0.5737 | 72.2% | 0.5540 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 6 | 0.5868 | 75.0% | 0.5479 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 7 | 0.5691 | 75.0% | 0.5417 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 8 | 0.5980 | 77.8% | 0.5208 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 9 | 0.5438 | 72.2% | 0.5243 | 75.0% | 75.0% | 100.0% | 85.7% |
-| 10 | 0.5427 | 75.0% | 0.5231 | 75.0% | 75.0% | 100.0% | 85.7% |
+| 1 | 0.4605 | 79.7% | 0.4028 | 84.7% | 80.8% | 100.0% | 89.4% |
 
 ### Best Validation Performance (Epoch Selection by Lowest Val Loss)
-- **Best Validation Loss**: `0.5208`
-- **Validation Accuracy**: `0.75`
-- **Validation Precision**: `0.75`
+- **Best Validation Loss**: `0.4028`
+- **Validation Accuracy**: `0.8467`
+- **Validation Precision**: `0.8083`
 - **Validation Recall**: `1.0`
-- **Validation F1-Score**: `0.8571`
+- **Validation F1-Score**: `0.894`
 - **Confusion Matrix**:
-  - True Negatives (Authentic Correct): `0`
-  - False Positives (Authentic as Modified): `3`
+  - True Negatives (Authentic Correct): `60`
+  - False Positives (Authentic as Modified): `46`
   - False Negatives (Modified as Authentic): `0`
-  - True Positives (Modified Correct): `9`
+  - True Positives (Modified Correct): `194`
 
 ---
 
 ## 4. Empirical Overfitting & Generalization Observations
 
 1. **Train vs. Validation Loss Dynamics**:
-   - Final Training Loss: `0.5427`
-   - Final Validation Loss: `0.5231`
-   - Generalization Loss Gap: `0.0196`
+   - Final Training Loss: `0.4605`
+   - Final Validation Loss: `0.4028`
+   - Generalization Loss Gap: `0.0577`
 2. **Analysis**:
    - The validation loss decreased steadily alongside training loss without diverging or exhibiting rapid validation error spikes.
    - Dropout rate ($p=0.3$) and weight decay ($10^{-4}$) successfully provided regularization.
@@ -84,5 +75,5 @@
 
 ## 5. Artifacts Generated
 
-- **Best Model Weights**: [`PERSON_3_SANJAY/models/resnet18_baseline_best.pt`](file:///D:\elenxis\PERSON_3_SANJAY\models\resnet18_baseline_best.pt)
-- **Learning Curves Visual**: [`PERSON_3_SANJAY/results/learning_curves.png`](file:///D:\elenxis\PERSON_3_SANJAY\results\learning_curves.png)
+- **Best Model Weights**: [`PERSON_3_SANJAY/models/resnet18_baseline_best.pt`](file:////Users/nivash/elenxis/PERSON_3_SANJAY/models/resnet18_baseline_best.pt)
+- **Learning Curves Visual**: [`PERSON_3_SANJAY/results/learning_curves.png`](file:////Users/nivash/elenxis/PERSON_3_SANJAY/results/learning_curves.png)

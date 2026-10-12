@@ -61,6 +61,12 @@ def main():
     parser.add_argument("--batch-size", type=int, default=8, help="Batch size")
     parser.add_argument("--lr", type=float, default=1e-4, help="Learning rate")
     parser.add_argument("--seed", type=int, default=42, help="Random seed")
+    parser.add_argument(
+        "--pretrained",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Download and use ImageNet pretrained weights; disabled by default to avoid network-dependent startup failures.",
+    )
     args = parser.parse_args()
 
     metadata_path = REPO_ROOT / "PERSON_2_NIVASH" / "data" / "metadata.csv"
@@ -83,7 +89,7 @@ def main():
         "learning_rate": args.lr,
         "weight_decay": 1e-4,
         "dropout_rate": 0.3,
-        "pretrained": True,
+        "pretrained": args.pretrained,
         "freeze_backbone": False,
         "model_name": "resnet18_baseline"
     }

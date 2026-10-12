@@ -131,7 +131,7 @@ def train_baseline_pipeline(
         "weight_decay": 1e-4,
         "epochs": 1 if smoke_test else 10,
         "dropout_rate": 0.3,
-        "pretrained": True,
+        "pretrained": False,
         "freeze_backbone": False,
         "model_name": "resnet18_baseline"
     }

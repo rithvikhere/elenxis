@@ -21,6 +21,8 @@ Academic & Architectural Rationale:
 
 from pathlib import Path
 from typing import Dict, Any, Optional, Union, Tuple
+import warnings
+
 import torch
 import torch.nn as nn
 import torchvision.models as models
@@ -55,9 +57,21 @@ class ResNet18ForensicsClassifier(nn.Module):
         self.pretrained = pretrained
         self.architecture_name = "resnet18_transfer_learning"
 
-        # Load backbone
+        # Load backbone. When pretrained weights cannot be fetched (common in offline
+        # or restricted environments), fall back to a randomly initialized ResNet18 so
+        # the project still trains and runs without a mandatory external download.
         weights = models.ResNet18_Weights.DEFAULT if pretrained else None
-        self.resnet = models.resnet18(weights=weights)
+        try:
+            self.resnet = models.resnet18(weights=weights)
+        except Exception as exc:  # pragma: no cover - defensive fallback for blocked downloads
+            if not pretrained:
+                raise
+            warnings.warn(
+                "Pretrained ImageNet weights could not be downloaded; falling back to a randomly initialized ResNet18. "
+                f"Original error: {exc}",
+                RuntimeWarning,
+            )
+            self.resnet = models.resnet18(weights=None)
 
         # Optional backbone parameter freezing
         if freeze_backbone:
