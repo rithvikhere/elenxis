@@ -49,6 +49,11 @@ class TestParseAmount:
         result, _ = parse_amount("₹0.10")
         assert result is None
 
+    def test_date_line_is_not_treated_as_amount(self):
+        result, value = parse_amount("20 Sept 2026, 2:43pm")
+        assert result is None
+        assert value is None
+
 
 class TestParseDate:
     def test_named_month_format(self):
@@ -63,6 +68,11 @@ class TestParseDate:
 
     def test_no_date(self):
         assert parse_date("No date in this text")[0] is None
+
+    def test_date_with_month_abbreviation_and_time(self):
+        d, iso = parse_date("20 Sept 2026, 2:43pm")
+        assert d == "20 Sep 2026"
+        assert iso == "2026-09-20"
 
     def test_case_insensitive_month(self):
         d, iso = parse_date("14 mar 2026")
@@ -97,6 +107,9 @@ class TestParseUtr:
 
     def test_no_utr(self):
         assert parse_utr("No transaction info") is None
+
+    def test_to_nirmala_recipient(self):
+        assert parse_recipient("To NIRMALA\n₹260.00") == "NIRMALA"
 
     def test_utr_number_label(self):
         val = parse_utr("UTR Number UTR8078673")
